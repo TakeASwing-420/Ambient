@@ -189,8 +189,12 @@ const AudioPlayer: FC<AudioPlayerProps> = ({
         </Button>
         <Button 
           variant="default"
-          className="w-full bg-success hover:bg-success/90"
+          className="w-full text-white font-medium"
           onClick={onDownload}
+          style={{ 
+            background: 'linear-gradient(to right, #4F46E5, #EC4899)',
+            transition: 'all 0.3s ease'
+          }}
         >
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
