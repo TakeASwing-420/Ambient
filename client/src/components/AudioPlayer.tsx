@@ -150,12 +150,54 @@ const AudioPlayer: FC<AudioPlayerProps> = ({
         
         <div className="flex items-center space-x-3">
           <span className="text-sm">{formatTime(currentTime)}</span>
-          <div className="flex-1 h-2 bg-white bg-opacity-20 rounded-full overflow-hidden">
+          <div 
+            className="flex-1 h-4 bg-white bg-opacity-20 rounded-full overflow-hidden cursor-pointer relative"
+            onClick={(e) => {
+              if (!audioRef.current) return;
+              const bounds = e.currentTarget.getBoundingClientRect();
+              const x = e.clientX - bounds.left;
+              const percent = x / bounds.width;
+              const newTime = percent * duration;
+              audioRef.current.currentTime = newTime;
+              setCurrentTime(newTime);
+            }}
+          >
             <div 
               ref={progressRef}
-              className="h-full bg-white" 
+              className="h-full bg-white absolute left-0 top-0" 
               style={{ width: `${(currentTime / duration) * 100}%` }}
             ></div>
+            <div 
+              className="absolute h-4 w-4 bg-white rounded-full shadow-lg cursor-grab active:cursor-grabbing"
+              style={{ 
+                left: `calc(${(currentTime / duration) * 100}% - 8px)`,
+                top: '0px'
+              }}
+              onMouseDown={(e) => {
+                e.stopPropagation();
+                
+                const handleMouseMove = (moveEvent: MouseEvent) => {
+                  if (!audioRef.current) return;
+                  const bounds = e.currentTarget.parentElement?.getBoundingClientRect();
+                  if (!bounds) return;
+                  
+                  const x = Math.max(0, Math.min(moveEvent.clientX - bounds.left, bounds.width));
+                  const percent = x / bounds.width;
+                  const newTime = percent * duration;
+                  
+                  audioRef.current.currentTime = newTime;
+                  setCurrentTime(newTime);
+                };
+                
+                const handleMouseUp = () => {
+                  document.removeEventListener('mousemove', handleMouseMove);
+                  document.removeEventListener('mouseup', handleMouseUp);
+                };
+                
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+              }}
+            />
           </div>
           <span className="text-sm">{formatTime(duration)}</span>
         </div>
