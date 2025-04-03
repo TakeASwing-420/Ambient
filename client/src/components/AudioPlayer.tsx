@@ -167,10 +167,10 @@ const AudioPlayer: FC<AudioPlayerProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6">
+      <div className="flex flex-col gap-4 mt-6 w-full">
         <Button 
           variant="outline"
-          className="flex-1 text-gray-800"
+          className="w-full text-gray-800"
           onClick={onRegenerate}
         >
           <svg 
@@ -185,11 +185,11 @@ const AudioPlayer: FC<AudioPlayerProps> = ({
           >
             <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"></path>
           </svg>
-          Regenerate
+          Adjust Parameters
         </Button>
         <Button 
           variant="default"
-          className="flex-1 bg-success hover:bg-success/90"
+          className="w-full bg-success hover:bg-success/90"
           onClick={onDownload}
         >
           <svg 

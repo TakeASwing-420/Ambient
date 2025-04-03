@@ -86,14 +86,9 @@ const WorkflowContainer: FC = () => {
     }
   };
 
-  const handleRegenerateLofi = async () => {
-    if (!audioFile) return;
-    
-    try {
-      await generateLofi(audioFile.file, parameters);
-    } catch (err) {
-      console.error('Error regenerating lofi:', err);
-    }
+  const handleRegenerateLofi = () => {
+    // Instead of regenerating immediately, go back to parameters screen
+    setCurrentStep(2);
   };
 
   const handleDownloadAudio = () => {
