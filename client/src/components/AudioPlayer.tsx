@@ -176,13 +176,17 @@ const AudioPlayer: FC<AudioPlayerProps> = ({
               onMouseDown={(e) => {
                 e.stopPropagation();
                 
+                // Store the progress bar element reference and its bounds
+                const progressBar = e.currentTarget.parentElement;
+                if (!progressBar) return;
+                
+                const progressBarBounds = progressBar.getBoundingClientRect();
+                
                 const handleMouseMove = (moveEvent: MouseEvent) => {
                   if (!audioRef.current) return;
-                  const bounds = e.currentTarget.parentElement?.getBoundingClientRect();
-                  if (!bounds) return;
                   
-                  const x = Math.max(0, Math.min(moveEvent.clientX - bounds.left, bounds.width));
-                  const percent = x / bounds.width;
+                  const x = Math.max(0, Math.min(moveEvent.clientX - progressBarBounds.left, progressBarBounds.width));
+                  const percent = x / progressBarBounds.width;
                   const newTime = percent * duration;
                   
                   audioRef.current.currentTime = newTime;
