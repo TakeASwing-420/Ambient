@@ -12,7 +12,7 @@ build = ["npm", "run", "build"]
 run = ["npm", "run", "start"]
 
 [workflows]
-runButton = "Project"
+runButton = "Full Stack Dev"
 
 [[workflows.workflow]]
 name = "Project"
@@ -37,6 +37,41 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "Full Stack Dev"
+author = 34225913
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python ai_model/main.py"
+
+[[workflows.workflow]]
+name = "AI Model Training"
+author = 34225913
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python ai_model/train.py --data_dir ai_model/data --output_dir ai_model/output --checkpoint_dir ai_model/models"
+
+[[workflows.workflow]]
+name = "Run Tests"
+author = 34225913
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run check"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python -m pytest ai_model/tests/"
 
 [[ports]]
 localPort = 5000
