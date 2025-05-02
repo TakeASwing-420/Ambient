@@ -30,7 +30,7 @@ export async function processAudio(
     // First try to use the advanced AI model for processing
     try {
       // Create command for running Python audio processor
-      const command = `python3 ai_model/main.py process "${inputPath}" "${outputPath}" --chill_level ${parameters.chillLevel} --beat_intensity ${parameters.beatIntensity} --vintage_effect ${parameters.vintageEffect} --mood ${parameters.mood}`;
+      const command = `python ai_model/main.py process "${inputPath}" "${outputPath}" --chill_level ${parameters.chillLevel} --beat_intensity ${parameters.beatIntensity} --vintage_effect ${parameters.vintageEffect} --mood ${parameters.mood}`;
       
       // Execute the command
       const { stdout, stderr } = await execPromise(command);
