@@ -6,6 +6,7 @@ import Features from "@/components/Features";
 import { GoArrowRight } from "react-icons/go";
 import { BsStars } from "react-icons/bs";
 import Process from "@/components/Process";
+import { Link } from "wouter";
 
 const Home: FC = () => {
   useEffect(() => {
@@ -32,12 +33,17 @@ const Home: FC = () => {
             </p>
 
             <div className="flex gap-4">
-              <button className="darkBtn rounded-md text-[0.925rem] px-5 py-2 flex justify-center items-center gap-2">
-                Get Your Lofi Track <GoArrowRight />
-              </button>
-              <button className="lightBtn rounded-md text-[0.925rem] px-5 py-2">
-                Your Dashboard
-              </button>
+              <Link href="/convert">
+                <button className="darkBtn rounded-md text-[0.925rem] px-5 py-2 flex justify-center items-center gap-2">
+                  Get Your Lofi Track <GoArrowRight />
+                </button>
+              </Link>
+
+              <Link href="/dashboard">
+                <button className="lightBtn rounded-md text-[0.925rem] px-5 py-2">
+                  Your Dashboard
+                </button>
+              </Link>
             </div>
           </div>
 
@@ -49,7 +55,9 @@ const Home: FC = () => {
             />
 
             <div className="bg-white absolute bottom-[-1.75rem] right-[-0.5rem] rounded-md py-3 px-4 shadow-xl">
-              <h3 className="text-base purpleTitle flex justify-start items-center gap-1">Powered By AI <BsStars /></h3>
+              <h3 className="text-base purpleTitle flex justify-start items-center gap-1">
+                Powered By AI <BsStars />
+              </h3>
               <p className="text-sm subText">High-quality lofi conversion</p>
             </div>
           </div>
@@ -59,7 +67,7 @@ const Home: FC = () => {
         {/* <WorkflowContainer /> */}
 
         {/* Process */}
-        <Process/>
+        <Process />
 
         {/* Features */}
         <Features />

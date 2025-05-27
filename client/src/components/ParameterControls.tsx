@@ -32,9 +32,9 @@ const ParameterControls: FC<ParameterControlsProps> = ({
   };
 
   return (
-    <div className="space-y-6 mb-8">
+    <div className="space-y-6 mb-8 bg-white p-4 rounded-lg shadow-lg h-full">
       {/* File Info */}
-      <div className="bg-gray-50 rounded-lg p-4 mb-6 flex items-center justify-between">
+      <div className="bg-white rounded-lg p-4 mb-6 flex items-center justify-between">
         <div className="flex items-center">
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
