@@ -1,13 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { useEffect } from "react";
 import { FC } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import TrackHistory from "@/components/trackHistory";
+import Playlists from "@/components/playlists";
 
 const Dashboard: FC = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+const [display, setDisplay] = useState("trackHistory");
 
   return (
     <>
@@ -15,10 +19,19 @@ const Dashboard: FC = () => {
 
       <main className="max-w-7xl mx-auto mt-20 px-4 sm:px-6 lg:px-8 py-4 bg-purple-50 min-h-screen h-fit">
         {/* Hero */}
-        <section className="pb-12 flex flex-col justify-center items-center h-fit">
+        <section className="pb-4 flex flex-col justify-center items-center h-fit">
           <div className="w-full p-1 flex justify-center items-center text-left">
             <h2 className="font-poppins font-bold text-2xl md:text-4xl">Your <span className="purpleTitle">LoFi</span> Tracks</h2>
           </div>
+
+          <div className="mt-12 mb-2 p-1 flex gap-1 justify-center items-center border bg-gray-200">
+            <button className={`subText hover:bg-white/40 ${display === "trackHistory" ? "activeBtn" : ""} w-[200px]`} onClick={() => setDisplay("trackHistory")}>Conversion History</button>
+            <button className={`subText hover:bg-white/40 ${display === "playlist" ? "activeBtn" : ""} w-[200px]`} onClick={() => setDisplay("playlist")}>Playlists</button>
+          </div>
+        </section>
+
+        <section>
+          {display === "trackHistory" ? <TrackHistory/> : <Playlists/>}
         </section>
       </main>
 

@@ -116,3 +116,8 @@ input:focus {
 label {
   font-size: 0.9rem;
 }
+
+.activeBtn {
+  background: white !important;
+  color: black;
+}
