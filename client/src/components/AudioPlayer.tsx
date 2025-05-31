@@ -81,10 +81,10 @@ const AudioPlayer: FC<AudioPlayerProps> = ({
   };
 
   return (
-    <div className="w-full bg-white rounded-lg shadow-lg">
+    <div className="w-full bg-white rounded-lg shadow-lg card">
       <audio ref={audioRef} src={generatedAudio.url} preload="metadata" />
 
-      <div className="h-fit bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-t-lg p-6 text-white">
+      <div className="h-fit bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-t-lg p-6 text-white player">
         <div className="h-fit flex items-center justify-between mb-6">
           <div>
             <h4 className="font-semibold text-lg">LoFi version</h4>
@@ -219,10 +219,10 @@ const AudioPlayer: FC<AudioPlayerProps> = ({
         </div>
       </div>
 
-      <div className="flex gap-4 mt-6 w-full px-6">
+      <div className="flex md:flex-row flex-col gap-4 mt-6 w-full px-6">
         <Button
           variant="outline"
-          className="w-full text-gray-800 bg-purple-100 hover:bg-purple-200"
+          className="w-full text-gray-800 bg-purple-100 hover:bg-purple-200 darkBtn"
           onClick={onRegenerate}
         >
           <svg
@@ -241,7 +241,7 @@ const AudioPlayer: FC<AudioPlayerProps> = ({
         </Button>
         <Button
           variant="default"
-          className="w-full text-white font-medium"
+          className="w-full text-white font-medium player"
           onClick={onDownload}
           style={{
             background: "linear-gradient(to right, #4F46E5, #EC4899)",
@@ -267,22 +267,22 @@ const AudioPlayer: FC<AudioPlayerProps> = ({
       </div>
 
       <div className="mt-8 pt-6 border-t border-gray-200 p-6">
-        <h4 className="font-medium text-gray-700 mb-3">Parameters Used</h4>
+        <h4 className="font-medium text-gray-700 lightText mb-3">Parameters Used</h4>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-purple-50 shadow-md p-3 rounded">
-            <p className="text-xs text-gray-500">Chill Level</p>
+          <div className="bg-purple-50 shadow-md p-3 rounded miniCard">
+            <p className="text-xs text-gray-500 lightText">Chill Level</p>
             <p className="font-medium">{parameters.chillLevel}%</p>
           </div>
-          <div className="bg-purple-50 shadow-md p-3 rounded">
-            <p className="text-xs text-gray-500">Beat Intensity</p>
+          <div className="bg-purple-50 shadow-md p-3 rounded miniCard">
+            <p className="text-xs text-gray-500 lightText">Beat Intensity</p>
             <p className="font-medium">{parameters.beatIntensity}%</p>
           </div>
-          <div className="bg-purple-50 shadow-md p-3 rounded">
-            <p className="text-xs text-gray-500">Vintage Effect</p>
+          <div className="bg-purple-50 shadow-md p-3 rounded miniCard">
+            <p className="text-xs text-gray-500 lightText">Vintage Effect</p>
             <p className="font-medium">{parameters.vintageEffect}%</p>
           </div>
-          <div className="bg-purple-50 shadow-md p-3 rounded">
-            <p className="text-xs text-gray-500">Mood</p>
+          <div className="bg-purple-50 shadow-md p-3 rounded miniCard">
+            <p className="text-xs text-gray-500 lightText">Mood</p>
             <p className="font-medium">
               {parameters.mood.charAt(0).toUpperCase() +
                 parameters.mood.slice(1)}

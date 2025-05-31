@@ -72,24 +72,24 @@ const Convert: FC = () => {
     <>
       <Header />
 
-      <main className="max-w-7xl mx-auto mt-20 px-4 sm:px-6 lg:px-8 py-4 bg-purple-50 min-h-screen h-fit">
+      <main className="max-w-7xl mx-auto mt-20 px-4 sm:px-6 lg:px-8 py-4 bg-purple-50 min-h-screen h-fit convert">
         {/* Hero */}
         <section className="pb-12 flex flex-col justify-center items-center h-fit">
           <div className="w-full p-1 flex justify-center items-center text-left mb-12">
             <h2 className="font-poppins font-bold text-2xl md:text-4xl">
               Convert Your Music into&nbsp;
-            </h2>
-            <h2 className="font-poppins font-bold text-2xl md:text-4xl purpleTitle">
+            <span className="font-poppins w-fit font-bold text-2xl md:text-4xl purpleTitle">
               LoFi
+            </span>
             </h2>
           </div>
 
-          <div className="w-full flex h-[74vh] mb-16">
-            <div className="w-1/2 p-2 h-full">
+          <div className="w-full flex md:flex-row flex-col md:h-[74vh] h-fit mb-16">
+            <div className="md:w-1/2 w-full p-2 h-full">
               <WorkflowContainer />
             </div>
 
-            <div className="w-1/2 p-2">
+            <div className="md:w-1/2 w-full p-2">
               <ParameterControls
                 parameters={parameter}
                 audioFile={audioFile}

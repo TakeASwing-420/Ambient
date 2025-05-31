@@ -22,6 +22,175 @@
   }
 }
 
+body.dark-mode {
+  background: #0f0f1a;
+  color: #f0f0f0;
+}
+
+body.dark-mode .logo {
+  color: #f0f0f0;
+}
+
+body.dark-mode #navbar {
+  background: #0f0f1a;
+}
+
+body.dark-mode .navLink {
+  color: #bbb;
+}
+
+body.dark-mode .navLink:hover {
+  color: var(--primaryBtnHover);
+}
+
+body.dark-mode .activeLink {
+  color: var(--primaryBtnHover);
+}
+
+body.dark-mode .home{
+  background: #1a1a2e;
+  color: white;
+}
+
+body.dark-mode .convert{
+  background: #1a1a2e;
+  color: white;
+}
+
+body.dark-mode .dashboard{
+  background: #1a1a2e;
+  color: white;
+}
+
+body.dark-mode .subText {
+  color: #bbb !important;
+}
+
+body.dark-mode .lightBtn {
+  background: #7e22ce41;
+  border: none;
+}
+
+body.dark-mode .lightBtn:hover {
+  background: #7e22ce73;
+  color: #f0f0f0 !important;
+}
+
+body.dark-mode .darkBtn {
+  background: #7e22ce;
+  border: none;
+}
+
+body.dark-mode .darkBtn:hover {
+  background: #6518a7;
+  color: #f0f0f0;
+}
+
+body.dark-mode .AI{
+  background: #0f0f1a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode .card {
+  background: #0f0f1a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode .card2 {
+  background: #1a1a2e;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode .featureLogo {
+  background: #6418a740;
+}
+
+body.dark-mode .footer {
+  background: #0f1825;
+}
+
+body.dark-mode .player {
+  background: linear-gradient(to right, #4336d1, #7824bc, #de1f6f) !important;
+}
+
+body.dark-mode .lightText{
+  color: #a1a1a1;
+}
+
+body.dark-mode .miniCard {
+  background: #9233ea48;
+}
+
+body.dark-mode .option {
+  background: #6418a724;
+  border: 0.2px solid #481179;
+}
+
+body.dark-mode .optionEach:hover {
+  background: #6418a750;
+}
+
+body.dark-mode .activeBtn {
+  background: #1a1a2e !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-mode .sort {
+  background: #0f0f1a;
+  color: #f0f0f0;
+  border: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode .trackCard {
+  background: #340a5a;
+}
+
+body.dark-mode .playBtn {
+  background: #8925e0b5;
+}
+
+body.dark-mode .playBtn:hover {
+  background: #9328f0dd;
+}
+
+body.dark-mode .playlist {
+  background: #0f0f1a;
+  box-shadow: 1px 8px 10px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(255, 255, 255, 0.03);
+  border: none;
+}
+
+body.dark-mode .mainBg {
+  background: #0f0f1a;
+}
+
+body.dark-mode .secondBg {
+  background: #1a1a2e;
+}
+
+body.dark-mode .link {
+  color: var(--title);
+}
+
+body.dark-mode input {
+  background: #1a1a2e;
+  border: none;
+}
+
+body.dark-mode input:focus {
+  outline: none;
+}
+
+body.dark-mode .authBtn {
+  background: #340a5a !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-mode .authBtn:hover {
+  background: #481179 !important;
+  color: #f0f0f0 !important;
+}
+
 .scrolled {
   box-shadow: 1px 1px 10px gray;
 }

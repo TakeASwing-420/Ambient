@@ -51,17 +51,17 @@ const Playlists: FC = () => {
           <h1 className="font-semibold text-2xl">Your Playlists</h1>
 
           <div className="flex justify-center items-center gap-2 text-sm">
-            <button className="flex justify-center items-center gap-2 text-white bg-purple-500 px-4 py-2 rounded-lg hover:bg-purple-600 transition-all duration-200 ease-in-out">
+            <button className="flex justify-center items-center gap-2 text-white bg-purple-500 px-4 py-2 rounded-lg hover:bg-purple-600 transition-all duration-200 ease-in-out darkBtn">
               <IoMdAdd /> New Playlist
             </button>
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 w-full h-fit">
+        <div className="flex flex-wrap md:justify-normal justify-center md:gap-4 gap-8 w-full h-fit">
           {playlists.map((playlist) => (
             <div
               key={playlist.id}
-              className="h-[300px] w-[32.4%] rounded-lg bg-white shadow-lg border flex flex-col justify-between overflow-hidden"
+              className="h-[300px] md:w-[32.4%] w-[95%] rounded-lg bg-white shadow-lg border flex flex-col justify-between overflow-hidden playlist"
             >
               <div className="h-1/2 bg-gradient-to-br from-purple-900 via-purple-600 via-fuchsia-500 to-pink-400 flex justify-center items-center text-4xl">
                 <FaMusic className="text-white/50" />
@@ -75,7 +75,7 @@ const Playlists: FC = () => {
                 <p className="subText text-sm mb-2">
                   {playlist.totalTracks} tracks • {playlist.totalDuration} min
                 </p>
-                <button className="w-full flex justify-center items-center gap-2 bg-purple-500 rounded-lg py-2 text-white hover:bg-purple-600">
+                <button className="w-full flex justify-center items-center gap-2 bg-purple-500 rounded-lg py-2 text-white hover:bg-purple-600 darkBtn">
                   <CiPlay1 /> Play
                 </button>
               </div>

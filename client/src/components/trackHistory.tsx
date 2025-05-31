@@ -87,12 +87,12 @@ const TrackHistory: FC = () => {
   return (
     <>
       <main className="w-full flex flex-col gap-4 justify-center items-center">
-        <div className="w-full px-4 py-2 flex justify-between items-center">
-            <h1 className="font-semibold text-2xl">Your Conversion History</h1>
+        <div className="w-full px-4 py-2 flex md:flex-row flex-col justify-between items-center">
+            <h1 className="font-semibold md:text-2xl text-xl md:my-0 my-6">Your Conversion History</h1>
 
             <div className="flex justify-center items-center gap-2 text-sm">
                 <p className="text-sm subText">Sort by:</p>
-                <select name="sort" id="sort" className="p-2 rounded-lg border shadow-md">
+                <select name="sort" id="sort" className="p-2 rounded-lg border shadow-md sort">
                     <option value="Date">Date (Newest)</option>
                     <option value="Title">Title (A-Z)</option>
                     <option value="Duration">Duration</option>
@@ -102,10 +102,10 @@ const TrackHistory: FC = () => {
 
         {/* Tracks Display */}
         {tracks.map((track) => (
-          <div key={track.id} className="bg-white w-full shadow-lg p-5 flex justify-between items-center">
+          <div key={track.id} className="bg-white w-full shadow-lg p-5 flex md:flex-row flex-col md:gap-0 gap-4 md:justify-between justify-center items-center trackCard">
             <div className="flex justify-center items-center gap-3">
               {/* Play Icon */}
-              <div className="bg-purple-200 w-fit h-fit p-3 text-lg rounded-full flex justify-center items-center hover:bg-purple-300 transition-all duration-200 ease-in-out">
+              <div className="bg-purple-200 w-fit h-fit p-3 text-lg rounded-full flex justify-center items-center hover:bg-purple-300 transition-all duration-200 ease-in-out playBtn">
                 <IoPlayOutline />
               </div>
 

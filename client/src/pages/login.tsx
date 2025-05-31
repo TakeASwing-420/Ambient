@@ -14,15 +14,15 @@ const Login: FC = () => {
 
   return (
     <>
-          <main className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-purple-100 min-h-screen h-fit flex justify-center items-center">
+          <main className="w-full mx-auto px-2 sm:px-6 lg:px-8 py-8 bg-purple-100 min-h-screen h-fit flex justify-center items-center secondBg">
             {/* Hero */}
             <section className="text-center w-full flex flex-col justify-center items-center">
-              <div className="w-[38%] flex justify-start my-3 subText">
+              <div className="md:w-[38%] sm:w-[80%] w-[100%] flex justify-start my-3 subText">
                 <Link href="/" className="flex gap-1 justify-center items-center hover:text-purple-600"><GoArrowLeft /> Back to Home</Link>
               </div>
     
-              <form action="POST" className="h-fit w-[38%] bg-white shadow-2xl flex flex-col justify-center items-center px-3 py-6 rounded-xl">
-                <h2 className="font-poppins font-bold text-3xl mb-1">
+              <form action="POST" className="h-fit md:w-[38%] sm:w-[80%] w-[100%] bg-white shadow-2xl flex flex-col justify-center items-center px-3 py-6 rounded-xl mainBg">
+                <h2 className="font-poppins font-bold md:text-3xl text-2xl mb-1">
                   Welcome Back to Lofi-fy
                 </h2>
                 <p className="subText mb-6">Log in to continue your LoFi music journey</p>
@@ -51,12 +51,12 @@ const Login: FC = () => {
                 </div>
     
                 <div className="flex gap-2 justify-start w-4/5 items-center my-1">
-                    <p className="subText text-sm">Don&apos;t have an Account? <Link href="/signin" className="navLink text-purple-600">Sign-in</Link></p>
+                    <p className="subText text-sm">Don&apos;t have an Account? <Link href="/signin" className="navLink text-purple-600 link">Sign-in</Link></p>
                 </div>
     
                 <div className="flex flex-col gap-2 justify-center w-4/5 items-center my-5">
-                    <GoogleLoginButton className="border-2 shadow-none flex justify-center items-center w-full rounded-md py-2 transition duration-200"><span className="text-base flex justify-center items-center">Continue with Google</span></GoogleLoginButton>
-                    <AppleLoginButton className="border-2 shadow-none flex justify-center items-center w-full rounded-md py-2 transition duration-200"><span className="text-base flex justify-center items-center">Continue with Apple</span></AppleLoginButton>
+                    <GoogleLoginButton className="border-2 shadow-none flex justify-center items-center w-full rounded-md py-2 transition duration-200 authBtn"><span className="text-base flex justify-center items-center">Continue with Google</span></GoogleLoginButton>
+                    <AppleLoginButton className="border-2 shadow-none flex justify-center items-center w-full rounded-md py-2 transition duration-200 authBtn"><span className="text-base flex justify-center items-center">Continue with Apple</span></AppleLoginButton>
                 </div>
               </form>
             </section>

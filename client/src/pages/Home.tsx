@@ -17,44 +17,44 @@ const Home: FC = () => {
     <>
       <Header />
 
-      <main className="max-w-7xl mx-auto mt-20 px-4 sm:px-6 lg:px-8 py-8 bg-purple-50 min-h-screen h-fit">
+      <main className="max-w-7xl mx-auto mt-20 md:px-4 px-2 sm:px-6 lg:px-8 py-8 bg-purple-50 min-h-screen h-fit home">
         {/* Hero */}
-        <section className="pb-12 flex justify-center items-center h-[75vh]">
-          <div className="w-1/2 p-1 flex flex-col justify-center items-start text-left">
-            <h2 className="font-poppins font-bold text-3xl md:text-5xl mb-1">
+        <section className="pb-12 flex justify-center items-center min-h-[75vh] h-fit md:flex-row flex-col">
+          <div className="md:w-1/2 w-[95%] md:mt-0 mt-8 p-1 flex flex-col justify-center md:items-start items-center text-left">
+            <h2 className="font-poppins font-bold text-2xl md:text-5xl mb-1 md:text-left text-center">
               Transform Your Music into
             </h2>
-            <h2 className="font-poppins font-bold text-3xl md:text-5xl mb-5 purpleTitle">
+            <h2 className="font-poppins font-bold text-2xl md:text-5xl mb-5 purpleTitle">
               Chill LoFi Beats
             </h2>
-            <p className="subText max-w-2xl text-lg mx-auto mb-5">
+            <p className="subText max-w-2xl md:text-lg text-sm mx-auto mb-5 md:text-left text-center">
               Upload your track, adjust the parameters, and let our AI transform
               it into a chill lofi masterpiece.
             </p>
 
-            <div className="flex gap-4">
+            <div className="flex md:gap-4 gap-2">
               <Link href="/convert">
-                <button className="darkBtn rounded-md text-[0.925rem] px-5 py-2 flex justify-center items-center gap-2">
+                <button className="darkBtn rounded-md md:text-[0.925rem] text-xs px-5 py-2 flex justify-center items-center gap-2">
                   Get Your Lofi Track <GoArrowRight />
                 </button>
               </Link>
 
               <Link href="/dashboard">
-                <button className="lightBtn rounded-md text-[0.925rem] px-5 py-2">
+                <button className="lightBtn rounded-md md:text-[0.925rem] text-xs px-5 py-2">
                   Your Dashboard
                 </button>
               </Link>
             </div>
           </div>
 
-          <div className="w-1/2 flex justify-center items-center rounded-xl relative">
+          <div className="md:w-1/2 w-[95%] md:mt-0 mt-10 flex justify-center items-center rounded-xl relative">
             <img
               src="https://static.vecteezy.com/system/resources/thumbnails/040/983/192/small_2x/ai-generated-an-animated-scene-featuring-a-girl-with-wine-and-a-cat-against-a-nighttime-cityscape-backdrop-lo-fi-style-continuous-loop-free-video.jpg"
               alt=""
               className="w-[95%] rounded-xl"
             />
 
-            <div className="bg-white absolute bottom-[-1.75rem] right-[-0.5rem] rounded-md py-3 px-4 shadow-xl">
+            <div className="bg-white absolute bottom-[-1.75rem] right-[-0.5rem] rounded-md py-3 px-4 shadow-xl AI">
               <h3 className="text-base purpleTitle flex justify-start items-center gap-1">
                 Powered By AI <BsStars />
               </h3>

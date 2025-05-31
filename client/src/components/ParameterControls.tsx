@@ -32,9 +32,9 @@ const ParameterControls: FC<ParameterControlsProps> = ({
   };
 
   return (
-    <div className="space-y-6 mb-8 bg-white p-4 rounded-lg shadow-lg h-full">
+    <div className="space-y-6 mb-8 bg-white p-4 rounded-lg shadow-lg h-full card">
       {/* File Info */}
-      <div className="bg-white rounded-lg p-4 mb-6 flex items-center justify-between">
+      <div className="bg-white rounded-lg p-4 mb-6 flex items-center justify-between card2">
         <div className="flex items-center">
           <svg 
             xmlns="http://www.w3.org/2000/svg" 
@@ -52,7 +52,7 @@ const ParameterControls: FC<ParameterControlsProps> = ({
           </svg>
           <div>
             <p className="font-medium">{audioFile.name}</p>
-            <p className="text-sm text-gray-500">{formatFileSize(audioFile.file.size)} • {audioFile.duration}</p>
+            <p className="text-sm subText">{formatFileSize(audioFile.file.size)} • {audioFile.duration}</p>
           </div>
         </div>
         <button 
@@ -78,8 +78,8 @@ const ParameterControls: FC<ParameterControlsProps> = ({
       {/* Sliders */}
       <div>
         <div className="flex justify-between mb-2">
-          <label className="font-medium text-gray-700">Chill Level</label>
-          <span className="text-gray-500">{parameters.chillLevel}%</span>
+          <label className="font-medium subText">Chill Level</label>
+          <span className="subText">{parameters.chillLevel}%</span>
         </div>
         <Slider 
           defaultValue={[parameters.chillLevel]} 
@@ -96,8 +96,8 @@ const ParameterControls: FC<ParameterControlsProps> = ({
       
       <div>
         <div className="flex justify-between mb-2">
-          <label className="font-medium text-gray-700">Beat Intensity</label>
-          <span className="text-gray-500">{parameters.beatIntensity}%</span>
+          <label className="font-medium subText">Beat Intensity</label>
+          <span className="subText">{parameters.beatIntensity}%</span>
         </div>
         <Slider 
           defaultValue={[parameters.beatIntensity]} 
@@ -114,14 +114,14 @@ const ParameterControls: FC<ParameterControlsProps> = ({
       
       <div>
         <div className="flex justify-between mb-2">
-          <label className="font-medium text-gray-700">Vintage Effect</label>
-          <span className="text-gray-500">{parameters.vintageEffect}%</span>
+          <label className="font-medium subText">Vintage Effect</label>
+          <span className="subText">{parameters.vintageEffect}%</span>
         </div>
         <Slider 
           defaultValue={[parameters.vintageEffect]} 
           max={100} 
           step={1}
-          className="w-full"
+          className="w-full slider"
           onValueChange={(values) => handleSliderChange('vintageEffect', values)}
         />
         <div className="flex justify-between text-xs text-gray-400 mt-1">
@@ -131,14 +131,14 @@ const ParameterControls: FC<ParameterControlsProps> = ({
       </div>
       
       <div>
-        <label className="font-medium text-gray-700 mb-2 block">Mood</label>
+        <label className="font-medium subText mb-2 block">Mood</label>
         <div className="grid grid-cols-3 gap-2">
           <Button 
             type="button"
             variant={parameters.mood === 'relaxed' ? 'default' : 'outline'}
             size="sm"
             onClick={() => handleMoodSelect('relaxed')}
-            className={parameters.mood === 'relaxed' ? 'bg-primary text-white' : ''}
+            className={parameters.mood === 'relaxed' ? 'bg-primary text-white' : 'lightBtn'}
           >
             Relaxed
           </Button>
@@ -147,7 +147,7 @@ const ParameterControls: FC<ParameterControlsProps> = ({
             variant={parameters.mood === 'focus' ? 'default' : 'outline'}
             size="sm"
             onClick={() => handleMoodSelect('focus')}
-            className={parameters.mood === 'focus' ? 'bg-primary text-white' : ''}
+            className={parameters.mood === 'focus' ? 'bg-primary text-white' : 'lightBtn'}
           >
             Focus
           </Button>
@@ -156,7 +156,7 @@ const ParameterControls: FC<ParameterControlsProps> = ({
             variant={parameters.mood === 'sleep' ? 'default' : 'outline'}
             size="sm"
             onClick={() => handleMoodSelect('sleep')}
-            className={parameters.mood === 'sleep' ? 'bg-primary text-white' : ''}
+            className={parameters.mood === 'sleep' ? 'bg-primary text-white' : 'lightBtn'}
           >
             Sleep
           </Button>

@@ -16,8 +16,8 @@ const Features: FC = () => {
 
       <div className="grid md:grid-cols-3 gap-8">
         <div className="card p-6 shadow-md hover:shadow-lg">
-          <div className="w-12 h-12 bg-secondary bg-opacity-10 rounded-lg flex items-center justify-center mb-4">
-            <LuBrainCircuit className="text-2xl"/>
+          <div className="w-12 h-12 bg-secondary bg-opacity-10 rounded-lg flex items-center justify-center mb-4 featureLogo">
+            <LuBrainCircuit className="text-2xl "/>
           </div>
           <h3 className="purpleTitle font-poppins font-semibold text-lg mb-2">
             Advanced AI
@@ -29,7 +29,7 @@ const Features: FC = () => {
         </div>
 
         <div className="card p-6 shadow-md hover:shadow-lg">
-          <div className="w-12 h-12 bg-secondary bg-opacity-10 rounded-lg flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-secondary bg-opacity-10 rounded-lg flex items-center justify-center mb-4 featureLogo">
             <TbEaseInOutControlPoints className="text-2xl"/>
           </div>
           <h3 className="purpleTitle font-poppins font-semibold text-lg mb-2">
@@ -42,7 +42,7 @@ const Features: FC = () => {
         </div>
 
         <div className="card p-6 shadow-md hover:shadow-lg">
-          <div className="w-12 h-12 bg-accent bg-opacity-10 rounded-lg flex items-center justify-center mb-4">
+          <div className="w-12 h-12 bg-accent bg-opacity-10 rounded-lg flex items-center justify-center mb-4 featureLogo">
             <MdPrivacyTip className="text-2xl"/>
           </div>
           <h3 className="purpleTitle font-poppins font-semibold text-lg mb-2">

@@ -109,7 +109,7 @@ const WorkflowContainer: FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-4xl mx-auto h-full">
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden max-w-4xl mx-auto h-full card">
       {/* Step 1: Upload Music */}
       {currentStep === 1 && (
         <div className="p-6">
