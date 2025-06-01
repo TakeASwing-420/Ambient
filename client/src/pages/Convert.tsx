@@ -84,7 +84,7 @@ const Convert: FC = () => {
             </h2>
           </div>
 
-          <div className="w-full flex md:flex-row flex-col md:h-[74vh] h-fit mb-16">
+          <div className="w-full flex md:flex-row flex-col md:h-[83.5vh] h-fit mb-16">
             <div className="md:w-1/2 w-full p-2 h-full">
               <WorkflowContainer />
             </div>

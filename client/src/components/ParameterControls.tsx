@@ -2,6 +2,8 @@ import { FC } from 'react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { LofiParameters, AudioFile } from '@/types';
+import { IoArrowBackSharp } from "react-icons/io5";
+import { RiPauseFill } from "react-icons/ri";
 
 interface ParameterControlsProps {
   parameters: LofiParameters;
@@ -32,7 +34,7 @@ const ParameterControls: FC<ParameterControlsProps> = ({
   };
 
   return (
-    <div className="space-y-6 mb-8 bg-white p-4 rounded-lg shadow-lg h-full card">
+    <div className="space-y-6 mb-8 bg-white p-4 rounded-lg shadow-lg h-fit card">
       {/* File Info */}
       <div className="bg-white rounded-lg p-4 mb-6 flex items-center justify-between card2">
         <div className="flex items-center">
@@ -160,6 +162,11 @@ const ParameterControls: FC<ParameterControlsProps> = ({
           >
             Sleep
           </Button>
+        </div>
+
+        <div className='flex w-full justify-between items-center mt-6 mb-1'>
+          <button className='lightBtn px-4 py-2 rounded-lg text-sm flex gap-2 justify-center items-center'><IoArrowBackSharp />Back</button>
+          <button className='darkBtn  px-4 py-2 rounded-lg text-sm flex gap-2 justify-center items-center'>Generate LoFi<RiPauseFill /></button>
         </div>
       </div>
     </div>
