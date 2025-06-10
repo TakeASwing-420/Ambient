@@ -53,15 +53,28 @@ app.use((req, res, next) => {
   const port = 5000;
   const server = app.listen(port, "0.0.0.0", () => {
     log(`Video-to-LoFi server running on http://0.0.0.0:${port}`);
-    console.log(`API endpoints: 
-    - POST /api/process-video (video upload)
-    - GET /api/video/:id (video download)
-    - GET /api/health (health check)`);
   });
 
-  // Setup Vite after server starts to prevent port conflicts
+  server.on('error', (err) => {
+    console.error('Server error:', err);
+  });
+
+  // Setup Vite/static serving after API routes
   if (process.env.NODE_ENV !== "production") {
-    await setupVite(app, server);
+    // Import and setup Vite manually to avoid middleware conflicts
+    const { createServer } = await import("vite");
+    const vite = await createServer({
+      server: { middlewareMode: true },
+      appType: "spa",
+    });
+    
+    // Only use Vite for non-API routes
+    app.use((req, res, next) => {
+      if (req.path.startsWith('/api')) {
+        return next();
+      }
+      vite.middlewares(req, res, next);
+    });
   } else {
     serveStatic(app);
   }
