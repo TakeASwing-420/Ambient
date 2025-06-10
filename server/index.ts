@@ -66,8 +66,8 @@ async function startServer() {
     });
 
     const port = 5000;
-    const server = app.listen(port, () => {
-      log(`Video-to-LoFi server running on http://localhost:${port}`);
+    const server = app.listen(port, "0.0.0.0", () => {
+      log(`Video-to-LoFi server running on http://0.0.0.0:${port}`);
       console.log(`Server successfully listening on port ${port}`);
     });
 
