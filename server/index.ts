@@ -51,8 +51,12 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = 5000;
-  const server = app.listen(port, () => {
-    log(`serving on port ${port} - http://localhost:${port}`);
+  const server = app.listen(port, "0.0.0.0", () => {
+    log(`Video-to-LoFi server running on http://0.0.0.0:${port}`);
+    console.log(`API endpoints: 
+    - POST /api/process-video (video upload)
+    - GET /api/video/:id (video download)
+    - GET /api/health (health check)`);
   });
 
   // Setup Vite after server starts to prevent port conflicts
