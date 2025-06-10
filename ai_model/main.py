@@ -2,7 +2,14 @@ import argparse
 import json
 import os
 import sys
-from videoprocessor import predict_music_features
+
+# Try to import the full AI model, fallback to simplified version
+try:
+    from videoprocessor import predict_music_features
+    print("Using full AI model for video processing")
+except ImportError as e:
+    print(f"Full AI model unavailable ({e}), using fallback processor")
+    from fallback_processor import predict_music_features
 
 def process_video(video_path, output_path):
     """Process video and generate lofi parameters"""
