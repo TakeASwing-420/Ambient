@@ -90,7 +90,35 @@ export class MemStorage implements IStorage {
     const lofiVideo: LofiVideo = {
       id,
       sourceVideoId: track.sourceVideoId,
-      musicParameters: track.musicParameters,
+      musicParameters: {
+        title: typeof track.musicParameters === 'object' && track.musicParameters !== null 
+          ? (track.musicParameters as any).title 
+          : undefined,
+        key: typeof track.musicParameters === 'object' && track.musicParameters !== null 
+          ? Number((track.musicParameters as any).key) || 1
+          : 1,
+        mode: typeof track.musicParameters === 'object' && track.musicParameters !== null 
+          ? Number((track.musicParameters as any).mode) || 1
+          : 1,
+        bpm: typeof track.musicParameters === 'object' && track.musicParameters !== null 
+          ? Number((track.musicParameters as any).bpm) || 85
+          : 85,
+        energy: typeof track.musicParameters === 'object' && track.musicParameters !== null 
+          ? Number((track.musicParameters as any).energy) || 0.5
+          : 0.5,
+        valence: typeof track.musicParameters === 'object' && track.musicParameters !== null 
+          ? Number((track.musicParameters as any).valence) || 0.5
+          : 0.5,
+        swing: typeof track.musicParameters === 'object' && track.musicParameters !== null 
+          ? Number((track.musicParameters as any).swing) || 0.5
+          : 0.5,
+        chords: typeof track.musicParameters === 'object' && track.musicParameters !== null && Array.isArray((track.musicParameters as any).chords)
+          ? (track.musicParameters as any).chords
+          : [],
+        melodies: typeof track.musicParameters === 'object' && track.musicParameters !== null && Array.isArray((track.musicParameters as any).melodies)
+          ? (track.musicParameters as any).melodies
+          : []
+      },
       storageKey: track.storageKey,
       filename: track.filename,
       createdAt: new Date()

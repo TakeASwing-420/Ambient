@@ -1,5 +1,7 @@
-// Start script for Replit - runs the development server
-const { spawn } = require('child_process');
+#!/usr/bin/env node
+
+// Start script for Replit - runs the video-to-lofi transformation server
+import { spawn } from 'child_process';
 
 console.log('Starting video-to-lofi transformation server...');
 
@@ -14,7 +16,9 @@ server.on('error', (err) => {
 });
 
 server.on('close', (code) => {
-  console.log(`Server process exited with code ${code}`);
+  if (code !== 0) {
+    console.error(`Server process exited with code ${code}`);
+  }
   process.exit(code);
 });
 
