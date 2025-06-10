@@ -1,9 +1,9 @@
 import { 
   users, type User, type InsertUser,
-  audioUploads, type AudioUpload, type InsertAudioUpload,
-  lofiTracks, type LofiTrack, type InsertLofiTrack
+  videoUploads, type VideoUpload, type InsertVideoUpload,
+  lofiVideos, type LofiVideo, type InsertLofiVideo
 } from "@shared/schema";
-import { insertAudioUploadSchema, insertLofiTrackSchema } from "@shared/schema";
+import { insertVideoUploadSchema, insertLofiVideoSchema } from "@shared/schema";
 
 export interface IStorage {
   // User-related methods
@@ -11,33 +11,33 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   
-  // Audio uploads
-  getAudioUpload(id: number): Promise<AudioUpload | undefined>;
-  createAudioUpload(upload: InsertAudioUpload): Promise<AudioUpload>;
+  // Video uploads
+  getVideoUpload(id: number): Promise<VideoUpload | undefined>;
+  createVideoUpload(upload: InsertVideoUpload): Promise<VideoUpload>;
   
-  // Lofi tracks
-  getLofiTrack(id: number): Promise<LofiTrack | undefined>;
-  getLofiTracksBySourceAudio(sourceAudioId: number): Promise<LofiTrack[]>;
-  createLofiTrack(track: InsertLofiTrack): Promise<LofiTrack>;
+  // Lofi videos
+  getLofiVideo(id: number): Promise<LofiVideo | undefined>;
+  getLofiVideosBySourceVideo(sourceVideoId: number): Promise<LofiVideo[]>;
+  createLofiVideo(video: InsertLofiVideo): Promise<LofiVideo>;
 }
 
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
-  private audioUploads: Map<number, AudioUpload>;
-  private lofiTracks: Map<number, LofiTrack>;
+  private videoUploads: Map<number, VideoUpload>;
+  private lofiVideos: Map<number, LofiVideo>;
   
   private userIdCounter: number;
-  private audioUploadIdCounter: number;
-  private lofiTrackIdCounter: number;
+  private videoUploadIdCounter: number;
+  private lofiVideoIdCounter: number;
 
   constructor() {
     this.users = new Map();
-    this.audioUploads = new Map();
-    this.lofiTracks = new Map();
+    this.videoUploads = new Map();
+    this.lofiVideos = new Map();
     
     this.userIdCounter = 1;
-    this.audioUploadIdCounter = 1;
-    this.lofiTrackIdCounter = 1;
+    this.videoUploadIdCounter = 1;
+    this.lofiVideoIdCounter = 1;
   }
 
   // User methods
@@ -57,63 +57,43 @@ export class MemStorage implements IStorage {
     this.users.set(id, user);
     return user;
   }
-  
-  // Audio upload methods
-  async getAudioUpload(id: number): Promise<AudioUpload | undefined> {
-    return this.audioUploads.get(id);
+
+  // Video upload methods
+  async getVideoUpload(id: number): Promise<VideoUpload | undefined> {
+    return this.videoUploads.get(id);
   }
-  
-  async createAudioUpload(upload: InsertAudioUpload): Promise<AudioUpload> {
-    // Validate data
-    const validatedData = insertAudioUploadSchema.parse(upload);
-    
-    // Generate ID and create timestamp
-    const id = this.audioUploadIdCounter++;
-    const uploadedAt = new Date();
-    
-    // Create new record
-    const audioUpload: AudioUpload = {
-      ...validatedData,
+
+  async createVideoUpload(upload: InsertVideoUpload): Promise<VideoUpload> {
+    const id = this.videoUploadIdCounter++;
+    const videoUpload: VideoUpload = {
       id,
-      uploadedAt
+      ...upload,
+      uploadedAt: new Date()
     };
-    
-    // Store in map
-    this.audioUploads.set(id, audioUpload);
-    
-    return audioUpload;
+    this.videoUploads.set(id, videoUpload);
+    return videoUpload;
   }
-  
-  // Lofi track methods
-  async getLofiTrack(id: number): Promise<LofiTrack | undefined> {
-    return this.lofiTracks.get(id);
+
+  // Lofi video methods
+  async getLofiVideo(id: number): Promise<LofiVideo | undefined> {
+    return this.lofiVideos.get(id);
   }
-  
-  async getLofiTracksBySourceAudio(sourceAudioId: number): Promise<LofiTrack[]> {
-    return Array.from(this.lofiTracks.values()).filter(
-      (track) => track.sourceAudioId === sourceAudioId
+
+  async getLofiVideosBySourceVideo(sourceVideoId: number): Promise<LofiVideo[]> {
+    return Array.from(this.lofiVideos.values()).filter(
+      (video) => video.sourceVideoId === sourceVideoId,
     );
   }
-  
-  async createLofiTrack(track: InsertLofiTrack): Promise<LofiTrack> {
-    // Validate data
-    const validatedData = insertLofiTrackSchema.parse(track);
-    
-    // Generate ID and create timestamp
-    const id = this.lofiTrackIdCounter++;
-    const createdAt = new Date();
-    
-    // Create new record
-    const lofiTrack: LofiTrack = {
-      ...validatedData,
+
+  async createLofiVideo(track: InsertLofiVideo): Promise<LofiVideo> {
+    const id = this.lofiVideoIdCounter++;
+    const lofiVideo: LofiVideo = {
       id,
-      createdAt
+      ...track,
+      createdAt: new Date()
     };
-    
-    // Store in map
-    this.lofiTracks.set(id, lofiTrack);
-    
-    return lofiTrack;
+    this.lofiVideos.set(id, lofiVideo);
+    return lofiVideo;
   }
 }
 

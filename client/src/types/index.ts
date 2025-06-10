@@ -1,4 +1,4 @@
-export interface AudioFile {
+export interface VideoFile {
   file: File;
   name: string;
   size: string;
@@ -6,22 +6,27 @@ export interface AudioFile {
   url: string;
 }
 
-export interface LofiParameters {
-  chillLevel: number;
-  beatIntensity: number;
-  vintageEffect: number;
-  mood: 'relaxed' | 'focus' | 'sleep';
+export interface OutputParams {
+  title?: string;
+  key: number;
+  mode: number;
+  bpm: number;
+  energy: number;
+  valence: number;
+  swing: number;
+  chords: number[];
+  melodies: number[][];
 }
 
-export interface GeneratedAudio {
-  id: string;
+export interface GeneratedVideo {
   url: string;
   filename: string;
-  duration: string;
+  originalFileName: string;
+  musicParameters: OutputParams;
 }
 
-export interface ApiResponse {
+export interface ProcessingResult {
   success: boolean;
-  message: string;
-  data?: any;
+  data?: string;
+  error?: string;
 }
