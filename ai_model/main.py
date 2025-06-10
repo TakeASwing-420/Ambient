@@ -23,19 +23,36 @@ def process_video(video_path, output_path):
                 json.dump(error_result, f)
             return error_result
         
+        # Extract values without defaults - return failure if any are missing
+        try:
+            title = getattr(result, 'title')
+            key = int(getattr(result, 'key'))
+            mode = int(getattr(result, 'mode'))
+            bpm = int(getattr(result, 'bpm'))
+            energy = float(getattr(result, 'energy'))
+            valence = float(getattr(result, 'valence'))
+            swing = float(getattr(result, 'swing'))
+            chords = getattr(result, 'chords')
+            melodies = getattr(result, 'melodies')
+        except AttributeError as e:
+            error_result = {"success": False, "error": f"Missing required attribute: {str(e)}"}
+            with open(output_path, 'w') as f:
+                json.dump(error_result, f)
+            return error_result
+        
         # Convert result to the expected format
         success_result = {
             "success": True,
             "data": {
-                "title": getattr(result, 'title', 'Generated LoFi Track'),
-                "key": int(getattr(result, 'pred_key', 1)),
-                "mode": int(getattr(result, 'pred_mode', 0)), 
-                "bpm": int(getattr(result, 'pred_tempo', 85)),
-                "energy": float(getattr(result, 'pred_energy', 0.5)),
-                "valence": float(getattr(result, 'pred_valence', 0.6)),
-                "swing": float(getattr(result, 'pred_swing', 0.3)),
-                "chords": getattr(result, 'pred_chords', [1, 4, 5, 1]),
-                "melodies": getattr(result, 'pred_notes', [[60, 62, 64, 67]])
+                "title": title,
+                "key": key,
+                "mode": mode,
+                "bpm": bpm,
+                "energy": energy,
+                "valence": valence,
+                "swing": swing,
+                "chords": chords,
+                "melodies": melodies
             }
         }
         
