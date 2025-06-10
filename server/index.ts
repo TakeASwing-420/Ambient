@@ -46,7 +46,7 @@ async function startServer() {
 
     // Setup Vite/static serving after API routes
     if (process.env.NODE_ENV !== "production") {
-      await setupVite(app);
+      await setupVite(app, undefined);
     } else {
       serveStatic(app);
     }
