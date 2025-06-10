@@ -43,7 +43,7 @@ const upload = multer({
   }
 });
 
-export async function registerRoutes(app: Express) {
+export async function registerRoutes(app: Express): Promise<Express> {
   // Video upload and processing endpoint
   app.post("/api/process-video", upload.single('video'), async (req: Request, res: Response) => {
     try {
@@ -203,4 +203,6 @@ export async function registerRoutes(app: Express) {
   app.get("/api/health", (req: Request, res: Response) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
+
+  return app;
 }
