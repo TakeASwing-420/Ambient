@@ -89,7 +89,10 @@ export class MemStorage implements IStorage {
     const id = this.lofiVideoIdCounter++;
     const lofiVideo: LofiVideo = {
       id,
-      ...track,
+      sourceVideoId: track.sourceVideoId,
+      musicParameters: track.musicParameters,
+      storageKey: track.storageKey,
+      filename: track.filename,
       createdAt: new Date()
     };
     this.lofiVideos.set(id, lofiVideo);

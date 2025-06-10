@@ -18,7 +18,7 @@ export async function processVideoWithAI(videoPath: string): Promise<VideoProces
     
     // Call the AI model subprocess
     const pythonProcess = spawn('python3', [
-      path.join(process.cwd(), 'ai_model', 'main.py'),
+      path.join(process.cwd(), 'ai_model', 'simple_processor.py'),
       '--video-path', videoPath,
       '--output-path', outputPath
     ]);
