@@ -1,6 +1,7 @@
 import { FC, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import VideoUploadZone from './VideoUploadZone';
+import MusicPlayer from './MusicPlayer';
 import { VideoFile, GeneratedVideo } from '@/types';
 import { useVideoProcessing } from '@/hooks/useVideoProcessing';
 import { getVideoDuration } from '@/lib/video';

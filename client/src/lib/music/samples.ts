@@ -2,7 +2,7 @@ import * as Tone from 'tone';
 import { randomFromInterval } from './helper';
 import sampleConfig from './samples.json';
 
-export const SAMPLES_BASE_URL = './samples';
+export const SAMPLES_BASE_URL = '/assets/samples';
 export const SAMPLE_DEFAULT_VOLUME = -6;
 
 /** A SampleGroup defines a collection of samples, as taken from samples.json */

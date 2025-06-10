@@ -25,25 +25,25 @@ import * as Presets from './producer_presets';
  * The production process is deterministic, i.e. the same input will always yield the same output.
  */
 class Producer {
-  tonic: string;
-  keyNum: number;
-  mode: string;
-  modeNum: number;
-  energy: number;
-  valence: number;
-  swing: number;
-  preset: Presets.ProducerPreset;
-  notesInScale: string[];
-  notesInScalePitched: string[];
-  chordsInScale: string[];
-  chords: number[];
-  chordsTonal: Chord[];
-  melodies: number[][];
-  bpm: number;
-  numMeasures: number;
-  introLength: number;
-  mainLength: number;
-  outroLength: number;
+  tonic!: string;
+  keyNum!: number;
+  mode!: string;
+  modeNum!: number;
+  energy!: number;
+  valence!: number;
+  swing!: number;
+  preset!: Presets.ProducerPreset;
+  notesInScale!: string[];
+  notesInScalePitched!: string[];
+  chordsInScale!: string[];
+  chords!: number[];
+  chordsTonal!: Chord[];
+  melodies!: number[][];
+  bpm!: number;
+  numMeasures!: number;
+  introLength!: number;
+  mainLength!: number;
+  outroLength!: number;
   samples: [string, number][] = [];
   sampleLoops: SampleLoop[] = [];
   instruments: Instrument[] = [];
@@ -105,13 +105,13 @@ class Producer {
     this.drumbeatTimings.sort(
       ([_, time], [__, time2]) => Tone.Time(time).toSeconds() - Tone.Time(time2).toSeconds()
     );
-    let currentStartTime: Time = null;
+    let currentStartTime: Time | null = null;
     this.drumbeatTimings.forEach(([isStart, time]) => {
       if (isStart) {
         if (!currentStartTime) {
           currentStartTime = time;
         }
-      } else if (currentStartTime) {
+      } else if (currentStartTime !== null) {
         this.addSample(drumbeatGroup, drumbeatIndex, `${currentStartTime}:0`, `${time}:0`);
         currentStartTime = null;
       }
@@ -172,12 +172,18 @@ class Producer {
   produceFx() {
     if (this.valence < 0.5 && this.modeNum === 6) {
       // add rain
-      const randomRain = SAMPLEGROUPS.get('rain').getRandomSample(this.valence);
-      this.addSample('rain', randomRain, '0:0', `${this.numMeasures - 0.5}:0`);
+      const rainGroup = SAMPLEGROUPS.get('rain');
+      if (rainGroup) {
+        const randomRain = rainGroup.getRandomSample(this.valence);
+        this.addSample('rain', randomRain, '0:0', `${this.numMeasures - 0.5}:0`);
+      }
     } else {
       // add vinyl crackle
-      const randomVinyl = SAMPLEGROUPS.get('vinyl').getRandomSample(this.valence + this.energy);
-      this.addSample('vinyl', randomVinyl, '0:0', `${this.numMeasures - 0.5}:0`);
+      const vinylGroup = SAMPLEGROUPS.get('vinyl');
+      if (vinylGroup) {
+        const randomVinyl = vinylGroup.getRandomSample(this.valence + this.energy);
+        this.addSample('vinyl', randomVinyl, '0:0', `${this.numMeasures - 0.5}:0`);
+      }
     }
   }
 
@@ -260,7 +266,8 @@ class Producer {
       }
       
       const notes = this.melodies[chordNo].reduce(
-        ([arr, top], curr, i) => {
+        (acc: any, curr: number, i: number) => {
+          const [arr, top] = acc;
           if (top.length === 0) {
             return [arr, [curr, 1, i]];
           }
@@ -275,7 +282,8 @@ class Producer {
         [[], []]
       );
       const notesReduced = [...notes[0], notes[1]];
-      notesReduced.forEach(([note, length, i]) => {
+      notesReduced.forEach((noteData: any) => {
+        const [note, length, i] = noteData;
         const [scaleDegreeIndex, octave] = mapNote(note);
 
         if (scaleDegreeIndex >= 0) {
@@ -287,7 +295,7 @@ class Producer {
           this.addNote(
             this.preset.melody.instrument,
             melody,
-            null,
+            '4n' as Time,
             `${measure}:0:${i * 2}`,
             this.preset.melody.volume
           );

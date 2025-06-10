@@ -1,7 +1,7 @@
 import * as Tonal from '@tonaljs/tonal';
 import { Time } from 'tone/build/esm/core/type/Units';
 import { Instrument } from './instruments';
-import { OutputParams } from './params';
+import { OutputParams } from '@/types';
 
 /**
  * A Track contains the elements that make up a lo-fi track.
