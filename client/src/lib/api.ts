@@ -1,4 +1,4 @@
-import { OutputParams } from './params';
+import { OutputParams } from '@/types';
 
 /**
  * Uploads a video file to the Flask API and returns decoded output.

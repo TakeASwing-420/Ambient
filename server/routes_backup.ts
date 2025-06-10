@@ -4,39 +4,54 @@ import path from "path";
 import { promises as fs } from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { storage } from "./storage";
-import { processVideoWithAI } from "./videoProcessor";
-import { OutputParams } from "@/types";
+import { processVideoWithAI, combineVideoWithAudio, getVideoDuration } from "./videoProcessor";
+// Import types
+import { OutputParams } from '../client/src/types';
 
-// Generate simple lofi audio buffer (placeholder for now)
+// Generate lofi audio based on video analysis parameters
 async function generateLofiAudio(params: OutputParams): Promise<Buffer> {
-  // Create a simple audio buffer with lofi characteristics
-  const duration = 30; // 30 seconds
+  // Create a simple lofi audio track based on the parameters
   const sampleRate = 44100;
-  const channels = 2;
-  const samples = duration * sampleRate * channels;
+  const duration = 30; // 30 seconds
+  const baseFreq = 220 * Math.pow(2, (params.key - 1) / 12); // Convert key to frequency
+  const bpm = params.bpm || 85;
   
-  // Generate simple waveform based on parameters
-  const audioData = new Array(samples);
-  const frequency = 261.63 * Math.pow(2, (params.key - 1) / 12); // C4 + key offset
+  const samples = sampleRate * duration;
+  const buffer = Buffer.alloc(samples * 2); // 16-bit audio
   
-  for (let i = 0; i < samples; i += channels) {
-    const time = i / (sampleRate * channels);
-    const wave = Math.sin(2 * Math.PI * frequency * time) * params.energy;
-    audioData[i] = wave * 0.3; // Left channel
-    audioData[i + 1] = wave * 0.3; // Right channel
+  for (let i = 0; i < samples; i++) {
+    const time = i / sampleRate;
+    const beatTime = (time * bpm / 60) % 1;
+    
+    // Create a simple lofi chord progression
+    let frequency = baseFreq;
+    if (beatTime < 0.25) frequency = baseFreq;
+    else if (beatTime < 0.5) frequency = baseFreq * 1.25; // Perfect fourth
+    else if (beatTime < 0.75) frequency = baseFreq * 1.5; // Perfect fifth
+    else frequency = baseFreq * 1.33; // Major sixth
+    
+    // Apply lofi effects: low-pass filter simulation and vinyl noise
+    const sample = Math.sin(2 * Math.PI * frequency * time) * params.energy * 0.3;
+    const noise = (Math.random() - 0.5) * 0.02 * params.swing;
+    const lofiSample = sample + noise;
+    
+    const value = Math.floor(lofiSample * 32767);
+    buffer.writeInt16LE(Math.max(-32768, Math.min(32767, value)), i * 2);
   }
   
-  // Convert to buffer (simplified MP3-like format)
-  return Buffer.from(audioData.map(sample => Math.floor((sample + 1) * 127.5)));
+  return buffer;
 }
 
-const uploadsDir = path.join(process.cwd(), 'temp');
-
-// Ensure uploads directory exists
-fs.mkdir(uploadsDir, { recursive: true }).catch(() => {});
-
+// Configure multer for video uploads
 const upload = multer({
   dest: 'temp/',
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only video files are allowed'));
+    }
+  },
   limits: {
     fileSize: 100 * 1024 * 1024 // 100MB limit
   }
@@ -46,35 +61,30 @@ export async function registerRoutes(app: Express): Promise<Express> {
   // Video upload and processing endpoint
   app.post("/api/process-video", upload.single('video'), async (req: Request, res: Response) => {
     try {
-      console.log('Processing video upload...');
-      
       if (!req.file) {
-        console.log('No file in request');
-        return res.status(400).json({ 
-          success: false, 
-          error: 'No video file uploaded' 
-        });
+        return res.status(400).json({ error: "No video file uploaded" });
       }
 
-      const videoPath = req.file.path;
-      console.log(`Video uploaded to: ${videoPath}`);
-      
-      // Check if file exists
-      try {
-        await fs.access(videoPath);
-        console.log('Video file confirmed to exist');
-      } catch (fileError) {
-        console.error('Video file not found:', fileError);
-        return res.status(500).json({
-          success: false,
-          error: 'Uploaded file not found'
-        });
-      }
-      
-      // Process video with AI model
-      console.log('Starting AI processing...');
+      const videoFile = req.file;
+      const originalPath = videoFile.path;
+      const videoId = uuidv4();
+      const videoStorageKey = `video_${videoId}.${videoFile.originalname?.split('.').pop() || 'mp4'}`;
+      const videoPath = path.join('temp', videoStorageKey);
+
+      // Move uploaded file to permanent location
+      await fs.rename(originalPath, videoPath);
+
+      // Store video upload info
+      const videoUpload = await storage.createVideoUpload({
+        originalFilename: videoFile.originalname || 'video.mp4',
+        fileSize: videoFile.size,
+        mimeType: videoFile.mimetype,
+        storageKey: videoStorageKey
+      });
+
+      // Process video with AI to extract music parameters
+      console.log('Starting AI processing for video:', videoPath);
       const result = await processVideoWithAI(videoPath);
-      console.log('AI processing result:', result);
       
       if (!result.success) {
         console.error('AI processing failed:', result.error);
@@ -84,37 +94,24 @@ export async function registerRoutes(app: Express): Promise<Express> {
         });
       }
 
-      console.log('AI processing successful, data:', result.data);
-
-      // Store video upload record
-      const videoUpload = await storage.createVideoUpload({
-        originalFilename: req.file.originalname,
-        fileSize: req.file.size,
-        mimeType: req.file.mimetype,
-        storageKey: path.basename(videoPath)
-      });
-
-      console.log('Video upload record created:', videoUpload.id);
+      console.log('AI processing successful:', result.data);
 
       // Generate lofi audio based on AI parameters
-      console.log('Generating lofi audio...');
       const audioBuffer = await generateLofiAudio(result.data);
       
       // Save generated audio file
       const audioFilename = `lofi_${Date.now()}.mp3`;
-      const audioPath = path.join(uploadsDir, audioFilename);
+      const audioPath = path.join('temp', audioFilename);
       await fs.writeFile(audioPath, audioBuffer);
-      console.log('Audio file saved:', audioPath);
 
       // Store lofi video record
       const lofiVideo = await storage.createLofiVideo({
         sourceVideoId: videoUpload.id,
         filename: audioFilename,
         storageKey: audioFilename,
-        musicParameters: result.data
+        musicParameters: result.data,
+        status: 'completed'
       });
-
-      console.log('Lofi video record created:', lofiVideo.id);
 
       // Return success response
       res.json({
@@ -126,7 +123,6 @@ export async function registerRoutes(app: Express): Promise<Express> {
 
     } catch (error) {
       console.error('Video processing error:', error);
-      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       res.status(500).json({
         success: false,
         error: `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -158,7 +154,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
       
       res.setHeader('Content-Type', 'video/mp4');
       res.setHeader('Content-Length', stats.size);
-      
+      res.setHeader('Content-Disposition', `inline; filename="${lofiVideo.filename}"`);
+
       // Stream the video file
       const stream = require('fs').createReadStream(videoPath);
       stream.pipe(res);
