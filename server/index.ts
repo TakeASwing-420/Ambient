@@ -47,19 +47,6 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // Setup Vite before starting server but after API routes
-  if (process.env.NODE_ENV !== "production") {
-    const { createServer } = await import("vite");
-    const vite = await createServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.ssrFixStacktrace);
-    app.use(vite.middlewares);
-  } else {
-    serveStatic(app);
-  }
-
   // ALWAYS serve the app on port 5000
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
@@ -67,4 +54,11 @@ app.use((req, res, next) => {
   const server = app.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
   });
+
+  // Setup Vite after server starts to prevent port conflicts
+  if (process.env.NODE_ENV !== "production") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
 })();
