@@ -1,6 +1,6 @@
 import { FC, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import UploadZone from './UploadZone';
+import VideoUploadZone from './VideoUploadZone';
 import { VideoFile, GeneratedVideo } from '@/types';
 import { useVideoProcessing } from '@/hooks/useVideoProcessing';
 import { getVideoDuration } from '@/lib/video';
@@ -81,7 +81,7 @@ const WorkflowContainer: FC = () => {
         <div className="p-6">
           <h3 className="font-poppins font-semibold text-xl mb-4">Upload Your Video</h3>
           
-          <UploadZone onFileUpload={handleFileUpload} isFileSelected={!!videoFile} />
+          <VideoUploadZone onFileUpload={handleFileUpload} isFileSelected={!!videoFile} />
         </div>
       )}
       
