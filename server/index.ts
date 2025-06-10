@@ -1,6 +1,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
+import { promises as fs } from "fs";
 
 const app = express();
 app.use(express.json());
@@ -36,6 +37,9 @@ app.use((req, res, next) => {
   next();
 });
 
+// Ensure temp directory exists
+fs.mkdir('temp', { recursive: true }).catch(() => {});
+
 async function startServer() {
   try {
     await registerRoutes(app);
@@ -65,10 +69,30 @@ async function startServer() {
       console.error('Express error:', err);
     });
 
-    const port = 5000;
+    const port = process.env.PORT || 5000;
     const server = app.listen(port, "0.0.0.0", () => {
       log(`Video-to-LoFi server running on http://0.0.0.0:${port}`);
-      console.log(`Server successfully listening on port ${port}`);
+      
+      // Test server connectivity after startup
+      setTimeout(() => {
+        const http = require('http');
+        const options = {
+          hostname: 'localhost',
+          port: port,
+          path: '/api/health',
+          method: 'GET'
+        };
+        
+        const req = http.request(options, (res) => {
+          console.log(`Server self-test: ${res.statusCode}`);
+        });
+        
+        req.on('error', (err) => {
+          console.log('Server self-test failed:', err.message);
+        });
+        
+        req.end();
+      }, 1000);
     });
 
     server.on('error', (err) => {
