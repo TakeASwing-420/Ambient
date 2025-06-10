@@ -1,51 +1,44 @@
-import { FC, useState, useEffect } from 'react';
+import { FC, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import UploadZone from './UploadZone';
-import ParameterControls from './ParameterControls';
-import AudioPlayer from './AudioPlayer';
-import { AudioFile, LofiParameters, GeneratedAudio } from '@/types';
-import { useAudioProcessing } from '@/hooks/useAudioProcessing';
-import { getAudioDuration } from '@/lib/audio';
-
-const initialParameters: LofiParameters = {
-  chillLevel: 70,
-  beatIntensity: 50,
-  vintageEffect: 30,
-  mood: 'relaxed'
-};
+import VideoUploadZone from './VideoUploadZone';
+import VideoPlayer from './VideoPlayer';
+import { VideoFile, GeneratedVideo } from '@/types';
+import { useVideoProcessing } from '@/hooks/useVideoProcessing';
+import { getVideoDuration } from '@/lib/video';
 
 const WorkflowContainer: FC = () => {
   const [currentStep, setCurrentStep] = useState<number>(1);
-  const [audioFile, setAudioFile] = useState<AudioFile | null>(null);
-  const [parameters, setParameters] = useState<LofiParameters>(initialParameters);
+  const [videoFile, setVideoFile] = useState<VideoFile | null>(null);
   const { 
-    generateLofi, 
+    processVideo, 
     isProcessing, 
-    generatedAudio, 
+    generatedVideo, 
     error 
-  } = useAudioProcessing();
+  } = useVideoProcessing();
 
   const handleFileUpload = async (file: File) => {
     try {
-      const duration = await getAudioDuration(file);
+      const duration = await getVideoDuration(file);
       const url = URL.createObjectURL(file);
-      setAudioFile({
+      setVideoFile({
         file,
         name: file.name,
         size: (file.size / (1024 * 1024)).toFixed(1) + ' MB',
         duration: formatDuration(duration),
         url
       });
+      setCurrentStep(2);
     } catch (error) {
-      console.error('Error getting audio duration:', error);
-      // Fallback to a default duration if we can't get it
-      setAudioFile({
+      console.error('Error getting video duration:', error);
+      // Fallback if we can't get duration
+      setVideoFile({
         file,
         name: file.name,
         size: (file.size / (1024 * 1024)).toFixed(1) + ' MB',
         duration: '0:00',
         url: URL.createObjectURL(file)
       });
+      setCurrentStep(2);
     }
   };
 
@@ -55,108 +48,88 @@ const WorkflowContainer: FC = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const handleNextStep = () => {
-    setCurrentStep(currentStep + 1);
-  };
-
-  const handlePreviousStep = () => {
-    setCurrentStep(currentStep - 1);
-  };
-
-  const handleParameterChange = (param: keyof LofiParameters, value: any) => {
-    setParameters(prev => ({
-      ...prev,
-      [param]: value
-    }));
-  };
-
-  const handleRemoveFile = () => {
-    setAudioFile(null);
-    setCurrentStep(1);
-  };
-
   const handleGenerateLofi = async () => {
-    if (!audioFile) return;
+    if (!videoFile) return;
     
     try {
-      await generateLofi(audioFile.file, parameters);
+      await processVideo(videoFile.file);
       setCurrentStep(3);
     } catch (err) {
-      console.error('Error generating lofi:', err);
+      console.error('Error processing video:', err);
     }
   };
 
-  const handleRegenerateLofi = () => {
-    // Instead of regenerating immediately, go back to parameters screen
-    setCurrentStep(2);
+  const handleStartOver = () => {
+    setCurrentStep(1);
+    setVideoFile(null);
   };
 
-  const handleDownloadAudio = () => {
-    if (!generatedAudio) return;
+  const handleDownloadVideo = () => {
+    if (!generatedVideo) return;
     
     const link = document.createElement('a');
-    link.href = generatedAudio.url;
-    link.download = generatedAudio.filename;
+    link.href = `/api/download/${generatedVideo.videoId}`;
+    link.download = generatedVideo.filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const handleStartOver = () => {
-    setCurrentStep(1);
-    setAudioFile(null);
-    setParameters(initialParameters);
-  };
-
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-4xl mx-auto">
-      {/* Step 1: Upload Music */}
+      {/* Step 1: Upload Video */}
       {currentStep === 1 && (
         <div className="p-6">
-          <h3 className="font-poppins font-semibold text-xl mb-4">Upload Your Music</h3>
+          <h3 className="font-poppins font-semibold text-xl mb-4">Upload Your Video</h3>
           
-          <UploadZone onFileUpload={handleFileUpload} isFileSelected={!!audioFile} />
-          
-          <div className="flex justify-end mt-6">
-            <Button 
-              onClick={handleNextStep}
-              disabled={!audioFile}
-              className="bg-primary hover:bg-primary/90"
-            >
-              Next
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="h-4 w-4 ml-1" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <path d="M5 12h14M12 5l7 7-7 7"></path>
-              </svg>
-            </Button>
-          </div>
+          <VideoUploadZone onFileUpload={handleFileUpload} isFileSelected={!!videoFile} />
         </div>
       )}
       
-      {/* Step 2: Adjust Parameters */}
-      {currentStep === 2 && audioFile && (
+      {/* Step 2: Preview and Generate */}
+      {currentStep === 2 && videoFile && (
         <div className="p-6">
-          <h3 className="font-poppins font-semibold text-xl mb-4">Adjust Parameters</h3>
+          <h3 className="font-poppins font-semibold text-xl mb-4">Generate LoFi Video</h3>
           
-          <ParameterControls 
-            parameters={parameters}
-            audioFile={audioFile}
-            onParameterChange={handleParameterChange}
-            onRemoveFile={handleRemoveFile}
-          />
+          <div className="mb-6">
+            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-medium text-gray-900">{videoFile.name}</h4>
+                  <p className="text-sm text-gray-500">{videoFile.size} • {videoFile.duration}</p>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setCurrentStep(1)}
+                >
+                  Change Video
+                </Button>
+              </div>
+            </div>
+            
+            <video 
+              src={videoFile.url} 
+              controls 
+              className="w-full rounded-lg shadow-sm"
+              style={{ maxHeight: '300px' }}
+            />
+          </div>
           
-          <div className="flex justify-between mt-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <h4 className="font-medium text-blue-900 mb-2">How it works:</h4>
+            <ul className="text-sm text-blue-800 space-y-1">
+              <li>• Our AI analyzes your video content and mood</li>
+              <li>• Generates custom lofi music parameters</li>
+              <li>• Creates and overlays the perfect lofi soundtrack</li>
+              <li>• Produces a new video with the generated music</li>
+            </ul>
+          </div>
+          
+          <div className="flex justify-between">
             <Button 
               variant="outline"
-              onClick={handlePreviousStep}
+              onClick={() => setCurrentStep(1)}
               className="border-gray-300 hover:border-gray-400 text-gray-700"
             >
               <svg 
@@ -175,9 +148,10 @@ const WorkflowContainer: FC = () => {
             </Button>
             <Button 
               onClick={handleGenerateLofi}
+              disabled={isProcessing}
               className="bg-primary hover:bg-primary/90"
             >
-              Generate LoFi
+              {isProcessing ? 'Processing...' : 'Generate LoFi Video'}
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
                 className="h-4 w-4 ml-1" 
@@ -212,44 +186,50 @@ const WorkflowContainer: FC = () => {
                   strokeLinecap="round" 
                   strokeLinejoin="round"
                 >
-                  <path d="M9 18V5l12-2v13"></path>
-                  <circle cx="6" cy="18" r="3"></circle>
-                  <circle cx="18" cy="16" r="3"></circle>
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21,15 16,10 5,21"></polyline>
                 </svg>
               </div>
             </div>
-            <h3 className="font-poppins font-semibold text-xl mb-2">Generating Your LoFi Track</h3>
-            <p className="text-gray-600 max-w-md mx-auto">
-              Our AI is working its magic. This might take a minute or two...
+            <h3 className="font-poppins font-semibold text-xl mb-2">Creating Your LoFi Video</h3>
+            <p className="text-gray-600 max-w-md mx-auto mb-4">
+              Our AI is analyzing your video and generating the perfect lofi soundtrack. This might take a few minutes...
             </p>
+            
+            <div className="space-y-2 text-sm text-gray-500">
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                <span>Analyzing video content</span>
+              </div>
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                <span>Generating lofi music</span>
+              </div>
+              <div className="flex items-center justify-center space-x-2">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+                <span>Combining video with music</span>
+              </div>
+            </div>
           </div>
           
-          <div className="waveform-container mt-8 bg-gray-50 rounded-lg h-20">
-            {Array.from({ length: 50 }).map((_, i) => (
-              <div 
-                key={i}
-                className="absolute bottom-0 w-[3px] bg-secondary rounded-[1px] opacity-80 animate-[waveform-animation_1.5s_ease-in-out_infinite]"
-                style={{
-                  left: `${(i / 50) * 100}%`,
-                  animationDelay: `${Math.random() * 1.5}s`
-                }}
-              ></div>
-            ))}
-          </div>
+          {error && (
+            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-800 text-sm">{error}</p>
+            </div>
+          )}
         </div>
       )}
       
       {/* Step 3: Results */}
-      {currentStep === 3 && !isProcessing && generatedAudio && audioFile && (
+      {currentStep === 3 && !isProcessing && generatedVideo && videoFile && (
         <div className="p-6">
-          <h3 className="font-poppins font-semibold text-xl mb-4">Your LoFi Transformation</h3>
+          <h3 className="font-poppins font-semibold text-xl mb-4">Your LoFi Video is Ready!</h3>
           
-          <AudioPlayer 
-            generatedAudio={generatedAudio}
-            originalFileName={audioFile.name}
-            parameters={parameters}
-            onRegenerate={handleRegenerateLofi}
-            onDownload={handleDownloadAudio}
+          <VideoPlayer 
+            generatedVideo={generatedVideo}
+            originalFileName={videoFile.name}
+            onDownload={handleDownloadVideo}
             onStartOver={handleStartOver}
           />
         </div>

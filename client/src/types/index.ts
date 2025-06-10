@@ -23,6 +23,7 @@ export interface GeneratedVideo {
   filename: string;
   originalFileName: string;
   musicParameters: OutputParams;
+  videoId: number;
 }
 
 export interface ProcessingResult {

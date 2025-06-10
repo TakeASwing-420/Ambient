@@ -1,206 +1,191 @@
-import type { Express } from "express";
-import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { Express, Request, Response } from "express";
 import multer from "multer";
 import path from "path";
-import { randomUUID } from "crypto";
-import fs from "fs/promises";
-import { insertAudioUploadSchema, insertLofiTrackSchema } from "@shared/schema";
-import { ZodError } from "zod";
-import { processAudio } from "./audioProcessor";
+import { promises as fs } from "fs";
+import { v4 as uuidv4 } from "uuid";
+import { storage } from "./storage";
+import { processVideoWithAI, combineVideoWithAudio, getVideoDuration } from "./videoProcessor";
+import { MusicProducer } from "../client/src/lib/musicProducer";
 
-// Configure multer for file uploads
+// Configure multer for video uploads
 const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB
-  },
+  dest: 'temp/',
   fileFilter: (req, file, cb) => {
-    // Accept only audio files
-    const validTypes = ['audio/mpeg', 'audio/wav', 'audio/flac', 'audio/mp3', 'audio/x-m4a', 'audio/aac'];
-    if (validTypes.includes(file.mimetype)) {
+    if (file.mimetype.startsWith('video/')) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Please upload an MP3, WAV, or FLAC file.'));
+      cb(new Error('Only video files are allowed'));
     }
+  },
+  limits: {
+    fileSize: 100 * 1024 * 1024 // 100MB limit
   }
 });
 
-// Create temp directory for file storage if it doesn't exist
-const tempDir = path.join(process.cwd(), 'temp');
-const ensureTempDir = async () => {
-  try {
-    await fs.access(tempDir);
-  } catch (error) {
-    await fs.mkdir(tempDir, { recursive: true });
-  }
-};
-
-export async function registerRoutes(app: Express): Promise<Server> {
-  await ensureTempDir();
-
-  // API route for uploading audio file
-  app.post('/api/upload', upload.single('audio'), async (req, res) => {
+export async function registerRoutes(app: Express) {
+  // Video upload and processing endpoint
+  app.post("/api/process-video", upload.single('video'), async (req: Request, res: Response) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ 
-          success: false,
-          message: 'No file uploaded' 
-        });
+        return res.status(400).json({ error: "No video file uploaded" });
       }
 
-      // Generate a unique filename
-      const storageKey = `${randomUUID()}${path.extname(req.file.originalname)}`;
-      const filePath = path.join(tempDir, storageKey);
+      const videoFile = req.file;
+      const originalPath = videoFile.path;
+      const videoId = uuidv4();
+      const videoStorageKey = `video_${videoId}.${videoFile.originalname?.split('.').pop() || 'mp4'}`;
+      const videoPath = path.join('temp', videoStorageKey);
 
-      // Write file to disk
-      await fs.writeFile(filePath, req.file.buffer);
+      // Move uploaded file to permanent location
+      await fs.rename(originalPath, videoPath);
 
-      // Create database entry
-      const audioUpload = await storage.createAudioUpload({
-        originalFilename: req.file.originalname,
-        fileSize: req.file.size,
-        mimeType: req.file.mimetype,
-        storageKey
+      // Store video upload info
+      const videoUpload = await storage.createVideoUpload({
+        originalFilename: videoFile.originalname || 'video.mp4',
+        fileSize: videoFile.size,
+        mimeType: videoFile.mimetype,
+        storageKey: videoStorageKey
       });
 
-      res.status(201).json({
-        success: true,
-        message: 'File uploaded successfully',
-        data: {
-          id: audioUpload.id,
-          filename: audioUpload.originalFilename,
-          size: audioUpload.fileSize
-        }
+      // Process video with AI to extract music parameters
+      console.log('Processing video with AI...');
+      const aiResult = await processVideoWithAI(videoPath);
+
+      if (!aiResult.success) {
+        return res.status(422).json({ 
+          error: aiResult.error || "Failed to process video with AI"
+        });
+      }
+
+      // Parse the music parameters
+      const musicParams = JSON.parse(aiResult.data);
+      console.log('Extracted music parameters:', musicParams);
+
+      // Generate audio using the music parameters
+      console.log('Generating lofi music...');
+      const musicProducer = new MusicProducer();
+      const track = await musicProducer.produceTrack(musicParams);
+
+      // Convert audio buffer to WAV file
+      const audioBlob = musicProducer.bufferToWav(track.audioBuffer!);
+      const audioArrayBuffer = await audioBlob.arrayBuffer();
+      const audioBuffer = Buffer.from(audioArrayBuffer);
+
+      const audioId = uuidv4();
+      const audioPath = path.join('temp', `audio_${audioId}.wav`);
+      await fs.writeFile(audioPath, audioBuffer);
+
+      // Combine video with generated audio
+      console.log('Combining video with lofi music...');
+      const outputVideoId = uuidv4();
+      const outputVideoPath = path.join('temp', `lofi_video_${outputVideoId}.mp4`);
+      
+      const combineSuccess = await combineVideoWithAudio(videoPath, audioPath, outputVideoPath);
+
+      if (!combineSuccess) {
+        return res.status(500).json({ error: "Failed to combine video with audio" });
+      }
+
+      // Store the generated lofi video
+      const lofiVideo = await storage.createLofiVideo({
+        sourceVideoId: videoUpload.id,
+        musicParameters: musicParams,
+        storageKey: `lofi_video_${outputVideoId}.mp4`,
+        filename: `lofi_${videoFile.originalname || 'video.mp4'}`
       });
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      if (error instanceof ZodError) {
-        res.status(400).json({
-          success: false,
-          message: 'Invalid upload data',
-          errors: error.errors
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          message: 'Error uploading file',
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
-      }
-    }
-  });
 
-  // API route for generating lofi music
-  app.post('/api/generate-lofi', upload.single('audio'), async (req, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({
-          success: false,
-          message: 'No file uploaded'
-        });
-      }
-
-      // Parse parameters
-      let parameters;
+      // Clean up temporary files
       try {
-        parameters = JSON.parse(req.body.parameters);
+        await fs.unlink(audioPath);
       } catch (error) {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid parameters format'
-        });
+        console.warn('Failed to cleanup audio file:', error);
       }
 
-      // Generate a unique filename for the original upload
-      const originalStorageKey = `original_${randomUUID()}${path.extname(req.file.originalname)}`;
-      const originalFilePath = path.join(tempDir, originalStorageKey);
-
-      // Write original file to disk
-      await fs.writeFile(originalFilePath, req.file.buffer);
-
-      // Create database entry for original file
-      const audioUpload = await storage.createAudioUpload({
-        originalFilename: req.file.originalname,
-        fileSize: req.file.size,
-        mimeType: req.file.mimetype,
-        storageKey: originalStorageKey
-      });
-
-      // Process the audio to create lofi version
-      const lofiStorageKey = `lofi_${randomUUID()}${path.extname(req.file.originalname)}`;
-      const lofiFilePath = path.join(tempDir, lofiStorageKey);
-
-      // Process the audio file
-      await processAudio(originalFilePath, lofiFilePath, parameters);
-
-      // Create database entry for lofi track
-      const lofiTrack = await storage.createLofiTrack({
-        sourceAudioId: audioUpload.id,
-        parameters,
-        storageKey: lofiStorageKey,
-        filename: `lofi_${req.file.originalname}`
-      });
-
-      // Return the processed file
-      res.status(200).json({
+      res.json({
         success: true,
-        message: 'Lofi track generated successfully',
-        id: lofiTrack.id,
-        audioUrl: `/api/audio/${lofiStorageKey}`
+        videoId: lofiVideo.id,
+        filename: lofiVideo.filename,
+        musicParameters: musicParams
       });
+
     } catch (error) {
-      console.error('Error generating lofi:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error generating lofi track',
-        error: error instanceof Error ? error.message : 'Unknown error'
+      console.error('Video processing error:', error);
+      res.status(500).json({ 
+        error: "Internal server error during video processing"
       });
     }
   });
 
-  // API route for serving audio files
-  app.get('/api/audio/:storageKey', async (req, res) => {
+  // Endpoint to serve generated videos
+  app.get("/api/video/:id", async (req: Request, res: Response) => {
     try {
-      const { storageKey } = req.params;
-      const filePath = path.join(tempDir, storageKey);
+      const videoId = parseInt(req.params.id);
+      const lofiVideo = await storage.getLofiVideo(videoId);
 
+      if (!lofiVideo) {
+        return res.status(404).json({ error: "Video not found" });
+      }
+
+      const videoPath = path.join('temp', lofiVideo.storageKey);
+      
       // Check if file exists
       try {
-        await fs.access(filePath);
-      } catch (error) {
-        return res.status(404).json({
-          success: false,
-          message: 'Audio file not found'
-        });
+        await fs.access(videoPath);
+      } catch {
+        return res.status(404).json({ error: "Video file not found" });
       }
 
-      // Determine content type based on file extension
-      const ext = path.extname(storageKey).toLowerCase();
-      let contentType = 'audio/mpeg'; // Default
+      // Get video stats for proper headers
+      const stats = await fs.stat(videoPath);
       
-      if (ext === '.wav') contentType = 'audio/wav';
-      else if (ext === '.flac') contentType = 'audio/flac';
-      else if (ext === '.m4a') contentType = 'audio/m4a';
-      else if (ext === '.aac') contentType = 'audio/aac';
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('Content-Length', stats.size);
+      res.setHeader('Content-Disposition', `inline; filename="${lofiVideo.filename}"`);
 
-      // Set appropriate headers
-      res.setHeader('Content-Type', contentType);
-      res.setHeader('Content-Disposition', `inline; filename="${storageKey}"`);
+      // Stream the video file
+      const stream = require('fs').createReadStream(videoPath);
+      stream.pipe(res);
 
-      // Stream the file
-      const fileStream = fs.readFile(filePath);
-      res.send(await fileStream);
     } catch (error) {
-      console.error('Error serving audio file:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Error serving audio file',
-        error: error instanceof Error ? error.message : 'Unknown error'
-      });
+      console.error('Video serving error:', error);
+      res.status(500).json({ error: "Failed to serve video" });
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  // Endpoint to download generated videos
+  app.get("/api/download/:id", async (req: Request, res: Response) => {
+    try {
+      const videoId = parseInt(req.params.id);
+      const lofiVideo = await storage.getLofiVideo(videoId);
+
+      if (!lofiVideo) {
+        return res.status(404).json({ error: "Video not found" });
+      }
+
+      const videoPath = path.join('temp', lofiVideo.storageKey);
+      
+      // Check if file exists
+      try {
+        await fs.access(videoPath);
+      } catch {
+        return res.status(404).json({ error: "Video file not found" });
+      }
+
+      res.setHeader('Content-Type', 'video/mp4');
+      res.setHeader('Content-Disposition', `attachment; filename="${lofiVideo.filename}"`);
+
+      // Stream the video file for download
+      const stream = require('fs').createReadStream(videoPath);
+      stream.pipe(res);
+
+    } catch (error) {
+      console.error('Video download error:', error);
+      res.status(500).json({ error: "Failed to download video" });
+    }
+  });
+
+  // Health check endpoint
+  app.get("/api/health", (req: Request, res: Response) => {
+    res.json({ status: "ok", timestamp: new Date().toISOString() });
+  });
 }
