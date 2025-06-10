@@ -83,6 +83,51 @@ export async function registerRoutes(app: Express): Promise<Express> {
       });
 
       // Process video with AI to extract music parameters
+      console.log('Starting AI processing for video:', videoPath);
+      const result = await processVideoWithAI(videoPath);
+      
+      if (!result.success) {
+        console.error('AI processing failed:', result.error);
+        return res.status(500).json({
+          success: false,
+          error: result.error || 'Video processing failed'
+        });
+      }
+
+      console.log('AI processing successful:', result.data);
+
+      // Generate lofi audio based on AI parameters
+      const audioBuffer = await generateLofiAudio(result.data);
+      
+      // Save generated audio file
+      const audioFilename = `lofi_${Date.now()}.mp3`;
+      const audioPath = path.join('temp', audioFilename);
+      await fs.writeFile(audioPath, audioBuffer);
+
+      // Store lofi video record
+      const lofiVideo = await storage.createLofiVideo({
+        sourceVideoId: videoUpload.id,
+        filename: audioFilename,
+        filepath: audioPath,
+        musicParameters: result.data,
+        status: 'completed'
+      });
+
+      // Return success response
+      res.json({
+        success: true,
+        message: 'Video processed successfully',
+        data: result.data,
+        videoId: lofiVideo.id
+      });
+
+    } catch (error) {
+      console.error('Video processing error:', error);
+      res.status(500).json({
+        success: false,
+        error: `Internal server error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+    }
       console.log('Processing video with AI...');
       const aiResult = await processVideoWithAI(videoPath);
 

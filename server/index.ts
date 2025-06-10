@@ -69,30 +69,10 @@ async function startServer() {
       console.error('Express error:', err);
     });
 
-    const port = process.env.PORT || 5000;
+    const port = Number(process.env.PORT) || 5000;
     const server = app.listen(port, "0.0.0.0", () => {
-      log(`Video-to-LoFi server running on http://0.0.0.0:${port}`);
-      
-      // Test server connectivity after startup
-      setTimeout(() => {
-        const http = require('http');
-        const options = {
-          hostname: 'localhost',
-          port: port,
-          path: '/api/health',
-          method: 'GET'
-        };
-        
-        const req = http.request(options, (res) => {
-          console.log(`Server self-test: ${res.statusCode}`);
-        });
-        
-        req.on('error', (err) => {
-          console.log('Server self-test failed:', err.message);
-        });
-        
-        req.end();
-      }, 1000);
+      log(`Lofify server running on http://0.0.0.0:${port}`);
+      console.log(`Server successfully listening on port ${port}`);
     });
 
     server.on('error', (err) => {

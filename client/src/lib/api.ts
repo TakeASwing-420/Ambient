@@ -8,16 +8,32 @@ export const decode = async (videoFile: File): Promise<OutputParams> => {
   const formData = new FormData();
   formData.append('video', videoFile);
 
-  const response = await fetch('http://localhost:5000/decode', {
-    method: 'POST',
-    body: formData,
-  });
+  try {
+    const response = await fetch('/api/process-video', {
+      method: 'POST',
+      body: formData,
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`API Error (${response.status}): ${JSON.stringify(errorData)}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Server response:', response.status, errorText);
+      throw new Error(`Server error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    if (!result.success) {
+      console.error('Processing failed:', result.error);
+      throw new Error(result.error || 'Processing failed');
+    }
+
+    console.log('Processing successful:', result.data);
+    return result.data;
+  } catch (error) {
+    console.error('API Error:', error);
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Failed to process video');
   }
-
-  const data = await response.json();
-  return JSON.parse(data) as OutputParams;
 };
