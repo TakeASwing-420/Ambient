@@ -46,7 +46,13 @@ async function startServer() {
 
     // Setup Vite/static serving after API routes
     if (process.env.NODE_ENV !== "production") {
-      await setupVite(app, undefined);
+      const { createServer } = await import("vite");
+      const vite = await createServer({
+        server: { middlewareMode: true },
+        appType: "spa",
+      });
+      
+      app.use(vite.middlewares);
     } else {
       serveStatic(app);
     }
