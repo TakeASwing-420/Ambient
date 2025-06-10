@@ -24,22 +24,22 @@ const UploadZone: FC<UploadZoneProps> = ({ onFileUpload, isFileSelected }) => {
 
   const validateFile = (file: File): boolean => {
     // Check file type
-    const validTypes = ['audio/mpeg', 'audio/wav', 'audio/flac', 'audio/mp3', 'audio/x-m4a', 'audio/aac'];
+    const validTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/webm', 'video/quicktime'];
     if (!validTypes.includes(file.type)) {
       toast({
         title: "Invalid file type",
-        description: "Please upload an MP3, WAV, or FLAC file.",
+        description: "Please upload an MP4, MOV, AVI, or WebM video file.",
         variant: "destructive"
       });
       return false;
     }
 
-    // Check file size (10MB max)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    // Check file size (100MB max)
+    const maxSize = 100 * 1024 * 1024; // 100MB in bytes
     if (file.size > maxSize) {
       toast({
         title: "File too large",
-        description: "Please upload a file smaller than 10MB.",
+        description: "Please upload a video file smaller than 100MB.",
         variant: "destructive"
       });
       return false;
@@ -92,14 +92,14 @@ const UploadZone: FC<UploadZoneProps> = ({ onFileUpload, isFileSelected }) => {
         <>
           <div className="mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </div>
           
-          <p className="mb-2 font-medium">Drag & drop your audio file here</p>
+          <p className="mb-2 font-medium">Drag & drop your video file here</p>
           <p className="text-sm text-gray-500 mb-4">or click to browse</p>
           
-          <p className="text-xs text-gray-400">Supported formats: MP3, WAV, FLAC (Max 10MB)</p>
+          <p className="text-xs text-gray-400">Supported formats: MP4, MOV, AVI, WebM (Max 100MB)</p>
         </>
       ) : (
         <>
@@ -117,7 +117,7 @@ const UploadZone: FC<UploadZoneProps> = ({ onFileUpload, isFileSelected }) => {
         type="file" 
         ref={fileInputRef}
         className="hidden" 
-        accept="audio/*"
+        accept="video/*"
         onChange={handleFileSelect}
       />
     </div>
