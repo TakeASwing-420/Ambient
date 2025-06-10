@@ -1,9 +1,9 @@
-modules = ["nodejs-20"]
+modules = ["nodejs-20", "python-3.11"]
 run = "npm start"
 
 [nix]
 channel = "stable-24_05"
-packages = ["ffmpeg", "python3"]
+packages = ["cairo", "ffmpeg", "ffmpeg-full", "freetype", "ghostscript", "gobject-introspection", "gtk3", "libGL", "libGLU", "libjpeg_turbo", "libpng", "pkg-config", "python3", "qhull", "tcl", "tk", "which"]
 
 [[ports]]
 localPort = 3000

@@ -3,7 +3,7 @@ import { FC } from 'react';
 const Features: FC = () => {
   return (
     <section className="mt-16">
-      <h2 className="font-poppins font-bold text-2xl text-center mb-8">Why Choose VideoLofi?</h2>
+      <h2 className="font-poppins font-bold text-2xl text-center mb-8">Why Choose Lofify?</h2>
       
       <div className="grid md:grid-cols-3 gap-8">
         <div className="bg-white p-6 rounded-xl shadow-md">
