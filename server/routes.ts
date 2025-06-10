@@ -79,8 +79,21 @@ export async function registerRoutes(app: Express): Promise<Express> {
       }
 
       // Parse the music parameters
-      const musicParams = JSON.parse(aiResult.data);
-      console.log('Extracted music parameters:', musicParams);
+      const rawMusicParams = JSON.parse(aiResult.data);
+      console.log('Extracted music parameters:', rawMusicParams);
+      
+      // Ensure the parameters match the expected schema
+      const musicParams = {
+        title: rawMusicParams.title || undefined,
+        key: Number(rawMusicParams.key) || 1,
+        mode: Number(rawMusicParams.mode) || 1,
+        bpm: Number(rawMusicParams.bpm) || 85,
+        energy: Number(rawMusicParams.energy) || 0.5,
+        valence: Number(rawMusicParams.valence) || 0.5,
+        swing: Number(rawMusicParams.swing) || 0.5,
+        chords: Array.isArray(rawMusicParams.chords) ? rawMusicParams.chords : [],
+        melodies: Array.isArray(rawMusicParams.melodies) ? rawMusicParams.melodies : []
+      };
 
       // Generate audio using the music parameters
       console.log('Generating lofi music...');
