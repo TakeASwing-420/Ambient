@@ -92,8 +92,12 @@ export async function registerRoutes(app: Express): Promise<Express> {
         });
       }
 
-      // Parse the music parameters
-      const rawMusicParams = JSON.parse(aiResult.data);
+      // Parse the music parameters from AI result
+      const aiData = aiResult.data;
+      console.log('AI Result:', aiData);
+      
+      // Extract music parameters from the nested data structure
+      const rawMusicParams = aiData.data || aiData;
       console.log('Extracted music parameters:', rawMusicParams);
       
       // Ensure the parameters match the expected schema
@@ -153,7 +157,8 @@ export async function registerRoutes(app: Express): Promise<Express> {
     } catch (error) {
       console.error('Video processing error:', error);
       res.status(500).json({ 
-        error: "Internal server error during video processing"
+        error: "Internal server error during video processing",
+        details: error instanceof Error ? error.message : String(error)
       });
     }
   });
