@@ -1,7 +1,42 @@
 import json
 import random
 import os
-from output import Output
+
+# Import constants needed for Output class
+try:
+    from model.constants import CHORD_END_TOKEN, NOTES_PER_CHORD
+except ImportError:
+    # Fallback constants if model is not available
+    CHORD_END_TOKEN = 0
+    NOTES_PER_CHORD = 4
+
+# Simplified Output class that doesn't depend on external libraries
+class SimpleOutput:
+    def __init__(self, title, key, mode, bpm, energy, valence, chords, melodies, swing):
+        self.title = title
+        self.key = key
+        self.mode = mode
+        self.bpm = bpm
+        self.energy = energy
+        self.valence = valence
+        self.chords = chords
+        self.melodies = melodies
+        self.swing = swing
+    
+    def to_json(self):
+        import json
+        data = {
+            'title': self.title,
+            'key': self.key,
+            'mode': self.mode,
+            'bpm': self.bpm,
+            'energy': self.energy,
+            'valence': self.valence,
+            'chords': self.chords,
+            'melodies': self.melodies,
+            'swing': self.swing
+        }
+        return json.dumps(data)
 
 class MockTensor:
     def __init__(self, data):
@@ -53,7 +88,11 @@ class MockTensor:
             flat = self.data if isinstance(self.data, list) else [self.data]
             result = []
             for i in range(0, len(flat), cols):
-                result.append(flat[i:i+cols])
+                row = flat[i:i+cols]
+                # Pad row if needed
+                while len(row) < cols:
+                    row.append(0)
+                result.append(row)
             return MockTensor(result)
         return self
 
@@ -108,7 +147,15 @@ def predict_music_features(video_path):
         
         # Create mock tensors for Output class
         pred_chords = MockTensor([[[1 if i == (c-1) else 0 for i in range(8)] for c in chords + [0]]])
-        pred_notes = MockTensor([[melody_notes]])
+        
+        # Create proper pred_notes structure that matches what Output expects
+        # Output expects pred_notes.argmax(dim=2)[0].cpu().numpy()
+        notes_tensor_data = []
+        for note in melody_notes:
+            # Create one-hot encoding for each note
+            one_hot = [1 if i == (note-1) else 0 for i in range(8)]
+            notes_tensor_data.append(one_hot)
+        pred_notes = MockTensor([[notes_tensor_data]])
         pred_tempo = tempo
         pred_key = MockTensor([key - 1])  # 0-indexed for argmax
         pred_mode = MockTensor([mode - 1])  # 0-indexed for argmax
@@ -116,18 +163,27 @@ def predict_music_features(video_path):
         pred_valence = MockTensor([valence])
         pred_swing = MockTensor([0.2 + random.random() * 0.4])  # 0.2-0.6 swing
         
-        # Create output object
+        # Create output object using simplified version
         title = f"LoFi Track - {os.path.splitext(os.path.basename(video_path))[0]}"
-        output = Output(
+        
+        # Convert melodies to the expected format
+        melody_patterns = []
+        for i in range(0, len(melody_notes), NOTES_PER_CHORD):
+            pattern = melody_notes[i:i+NOTES_PER_CHORD]
+            while len(pattern) < NOTES_PER_CHORD:
+                pattern.append(1)  # pad with root note
+            melody_patterns.append(pattern)
+        
+        output = SimpleOutput(
             title=title,
-            pred_chords=pred_chords,
-            pred_notes=pred_notes,
-            pred_tempo=pred_tempo,
-            pred_key=pred_key,
-            pred_mode=pred_mode,
-            pred_valence=pred_valence,
-            pred_energy=pred_energy,
-            pred_swing=pred_swing
+            key=key,
+            mode=mode,
+            bpm=bpm,
+            energy=energy,
+            valence=valence,
+            chords=chords,
+            melodies=melody_patterns,
+            swing=0.2 + random.random() * 0.4
         )
         
         return output
