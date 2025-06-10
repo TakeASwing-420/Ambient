@@ -3,3 +3,8 @@ run = "npm start"
 
 [nix]
 channel = "stable-24_05"
+packages = ["ffmpeg", "python3"]
+
+[[ports]]
+localPort = 5000
+externalPort = 80
