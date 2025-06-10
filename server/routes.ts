@@ -5,7 +5,18 @@ import { promises as fs } from "fs";
 import { v4 as uuidv4 } from "uuid";
 import { storage } from "./storage";
 import { processVideoWithAI } from "./videoProcessor";
-import { OutputParams } from "@/types";
+// Define OutputParams interface locally
+interface OutputParams {
+  title: string;
+  key: number;
+  mode: number;
+  bpm: number;
+  energy: number;
+  valence: number;
+  swing: number;
+  chords: number[];
+  melodies: number[][];
+}
 
 // Generate simple lofi audio buffer (placeholder for now)
 async function generateLofiAudio(params: OutputParams): Promise<Buffer> {
