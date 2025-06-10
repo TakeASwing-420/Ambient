@@ -10,12 +10,10 @@ const Header: FC = () => {
             <div className="flex items-center cursor-pointer">
               <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 18V5l12-2v13"></path>
-                  <circle cx="6" cy="18" r="3"></circle>
-                  <circle cx="18" cy="16" r="3"></circle>
+                  <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
                 </svg>
               </div>
-              <h1 className="ml-3 font-poppins font-bold text-2xl text-gray-800">LoFify</h1>
+              <h1 className="ml-3 font-poppins font-bold text-2xl text-gray-800">VideoLofi</h1>
             </div>
           </Link>
           <div>

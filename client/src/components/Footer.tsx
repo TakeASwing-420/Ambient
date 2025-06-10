@@ -8,12 +8,10 @@ const Footer: FC = () => {
           <div className="flex items-center mb-4 md:mb-0">
             <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 18V5l12-2v13"></path>
-                <circle cx="6" cy="18" r="3"></circle>
-                <circle cx="18" cy="16" r="3"></circle>
+                <path d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
               </svg>
             </div>
-            <h2 className="ml-3 font-poppins font-bold text-xl">LoFify</h2>
+            <h2 className="ml-3 font-poppins font-bold text-xl">VideoLofi</h2>
           </div>
           <div className="flex space-x-6">
             <a href="#" className="text-gray-300 hover:text-white transition-colors">
@@ -35,7 +33,7 @@ const Footer: FC = () => {
         </div>
         <div className="mt-8 pt-8 border-t border-gray-700 flex flex-col md:flex-row justify-between">
           <p className="text-gray-400 text-sm text-center md:text-left">
-            &copy; {new Date().getFullYear()} LoFify. All rights reserved.
+            &copy; {new Date().getFullYear()} VideoLofi. All rights reserved.
           </p>
           <div className="flex justify-center md:justify-end space-x-6 mt-4 md:mt-0">
             <a href="#" className="text-gray-400 hover:text-gray-300 text-sm">Privacy Policy</a>

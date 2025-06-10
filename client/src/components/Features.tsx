@@ -3,7 +3,7 @@ import { FC } from 'react';
 const Features: FC = () => {
   return (
     <section className="mt-16">
-      <h2 className="font-poppins font-bold text-2xl text-center mb-8">Why Choose LoFify?</h2>
+      <h2 className="font-poppins font-bold text-2xl text-center mb-8">Why Choose VideoLofi?</h2>
       
       <div className="grid md:grid-cols-3 gap-8">
         <div className="bg-white p-6 rounded-xl shadow-md">
@@ -14,9 +14,9 @@ const Features: FC = () => {
               <path d="M12 17a1 1 0 100 2 1 1 0 000-2z"></path>
             </svg>
           </div>
-          <h3 className="font-poppins font-semibold text-lg mb-2">Advanced AI</h3>
+          <h3 className="font-poppins font-semibold text-lg mb-2">AI Video Analysis</h3>
           <p className="text-gray-600">
-            Our state-of-the-art AI model transforms any music into authentic lofi with exceptional quality.
+            Our AI analyzes your video content and generates custom lofi music that perfectly matches the mood and atmosphere.
           </p>
         </div>
         
@@ -26,9 +26,9 @@ const Features: FC = () => {
               <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"></path>
             </svg>
           </div>
-          <h3 className="font-poppins font-semibold text-lg mb-2">Full Control</h3>
+          <h3 className="font-poppins font-semibold text-lg mb-2">Automatic Processing</h3>
           <p className="text-gray-600">
-            Fine-tune your lofi transformation with intuitive controls tailored to your preferences.
+            Simply upload your video and let our AI handle everything - from analysis to music generation to final video creation.
           </p>
         </div>
         
@@ -41,7 +41,7 @@ const Features: FC = () => {
           </div>
           <h3 className="font-poppins font-semibold text-lg mb-2">Privacy First</h3>
           <p className="text-gray-600">
-            Your music stays private. We process your tracks securely and never store them longer than needed.
+            Your videos stay private. We process your content securely and never store them longer than needed.
           </p>
         </div>
       </div>
