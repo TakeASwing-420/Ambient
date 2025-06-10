@@ -29,7 +29,6 @@ const WorkflowContainer: FC = () => {
       setCurrentStep(2);
     } catch (error) {
       console.error('Error getting video duration:', error);
-      // Fallback if we can't get duration
       setVideoFile({
         file,
         name: file.name,
@@ -131,18 +130,6 @@ const WorkflowContainer: FC = () => {
               onClick={() => setCurrentStep(1)}
               className="border-gray-300 hover:border-gray-400 text-gray-700"
             >
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="h-4 w-4 mr-1" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <path d="M19 12H5M12 19l-7-7 7-7"></path>
-              </svg>
               Back
             </Button>
             <Button 
@@ -150,19 +137,7 @@ const WorkflowContainer: FC = () => {
               disabled={isProcessing}
               className="bg-primary hover:bg-primary/90"
             >
-              {isProcessing ? 'Processing...' : 'Generate LoFi Video'}
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="h-4 w-4 ml-1" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <path d="M15 7v10M9 17V7"></path>
-              </svg>
+              {isProcessing ? 'Processing Video...' : 'Generate LoFi Video'}
             </Button>
           </div>
         </div>
@@ -174,152 +149,69 @@ const WorkflowContainer: FC = () => {
           <div className="text-center py-10">
             <div className="inline-block mb-6 relative">
               <div className="w-20 h-20 border-4 border-gray-200 border-t-primary rounded-full animate-spin"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  className="h-6 w-6 text-primary animate-pulse" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21,15 16,10 5,21"></polyline>
-                </svg>
-              </div>
             </div>
             <h3 className="font-poppins font-semibold text-xl mb-2">Creating Your LoFi Video</h3>
             <p className="text-gray-600 max-w-md mx-auto mb-4">
               Our AI is analyzing your video and generating the perfect lofi soundtrack. This might take a few minutes...
             </p>
-            
-            <div className="space-y-2 text-sm text-gray-500">
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                <span>Analyzing video content</span>
-              </div>
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
-                <span>Generating lofi music</span>
-              </div>
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-                <span>Combining video with music</span>
-              </div>
-            </div>
           </div>
-          
-          {error && (
-            <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-800 text-sm">{error}</p>
-            </div>
-          )}
+        </div>
+      )}
+
+      {/* Error State */}
+      {error && (
+        <div className="p-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <h4 className="font-medium text-red-800 mb-2">Processing Error</h4>
+            <p className="text-red-700 text-sm">{error}</p>
+            <Button 
+              onClick={handleStartOver}
+              variant="outline"
+              className="mt-4"
+            >
+              Try Again
+            </Button>
+          </div>
         </div>
       )}
       
       {/* Step 3: Results */}
-      {currentStep === 3 && !isProcessing && generatedVideo && videoFile && (
+      {currentStep === 3 && generatedVideo && (
         <div className="p-6">
           <h3 className="font-poppins font-semibold text-xl mb-4">Your LoFi Video is Ready!</h3>
           
-          <div className="space-y-6">
-            {/* Video Player */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <video 
-                src={generatedVideo.url}
-                controls 
-                className="w-full rounded-lg shadow-sm"
-                style={{ maxHeight: '400px' }}
-              >
-                Your browser does not support the video tag.
-              </video>
+          <div className="mb-6">
+            <video 
+              src={generatedVideo.url} 
+              controls 
+              className="w-full rounded-lg shadow-sm"
+              style={{ maxHeight: '400px' }}
+            />
+          </div>
+          
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <h4 className="font-medium text-green-800 mb-2">Generated Music Details:</h4>
+            <div className="grid grid-cols-2 gap-4 text-sm text-green-700">
+              <div>Key: {generatedVideo.musicParameters?.key || 'C'}</div>
+              <div>BPM: {generatedVideo.musicParameters?.bpm || '85'}</div>
+              <div>Energy: {(generatedVideo.musicParameters?.energy * 100)?.toFixed(0) || '50'}%</div>
+              <div>Mood: {generatedVideo.musicParameters?.mood || 'Chill'}</div>
             </div>
-
-            {/* File Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-medium text-gray-900 mb-2">Original Video</h4>
-                <p className="text-sm text-gray-600">{videoFile.name}</p>
-              </div>
-              
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-medium text-gray-900 mb-2">Generated Video</h4>
-                <p className="text-sm text-gray-600">{generatedVideo.filename}</p>
-              </div>
-            </div>
-
-            {/* Music Parameters Display */}
-            {generatedVideo.musicParameters && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-medium text-blue-900 mb-3">Generated Music Details</h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div>
-                    <span className="text-blue-700 font-medium">Key:</span>
-                    <p className="text-blue-800">{['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][generatedVideo.musicParameters.key % 12]}</p>
-                  </div>
-                  <div>
-                    <span className="text-blue-700 font-medium">BPM:</span>
-                    <p className="text-blue-800">{Math.round(generatedVideo.musicParameters.bpm)}</p>
-                  </div>
-                  <div>
-                    <span className="text-blue-700 font-medium">Energy:</span>
-                    <p className="text-blue-800">{Math.round(generatedVideo.musicParameters.energy * 100)}%</p>
-                  </div>
-                  <div>
-                    <span className="text-blue-700 font-medium">Mood:</span>
-                    <p className="text-blue-800">{generatedVideo.musicParameters.valence > 0.5 ? 'Uplifting' : 'Chill'}</p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button 
-                onClick={handleDownloadVideo}
-                className="flex-1 bg-primary hover:bg-primary/90"
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  className="h-4 w-4 mr-2" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
-                </svg>
-                Download MP4
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                onClick={handleStartOver}
-                className="flex-1 border-gray-300 hover:border-gray-400 text-gray-700"
-              >
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  className="h-4 w-4 mr-2" 
-                  viewBox="0 0 24 24" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  strokeWidth="2" 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round"
-                >
-                  <path d="M3 12a9 9 0 019-9 9.75 9.75 0 016.74 2.74L21 8"></path>
-                  <path d="M21 3v5h-5"></path>
-                  <path d="M21 12a9 9 0 01-9 9 9.75 9.75 0 01-6.74-2.74L3 16"></path>
-                  <path d="M3 21v-5h5"></path>
-                </svg>
-                Create Another
-              </Button>
-            </div>
+          </div>
+          
+          <div className="flex justify-between">
+            <Button 
+              variant="outline"
+              onClick={handleStartOver}
+            >
+              Create Another
+            </Button>
+            <Button 
+              onClick={handleDownloadVideo}
+              className="bg-primary hover:bg-primary/90"
+            >
+              Download Video
+            </Button>
           </div>
         </div>
       )}
