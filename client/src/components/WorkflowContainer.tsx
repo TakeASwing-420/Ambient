@@ -181,22 +181,36 @@ const WorkflowContainer: FC = () => {
         <div className="p-6">
           <h3 className="font-poppins font-semibold text-xl mb-4">Your LoFi Video is Ready!</h3>
           
-          <div className="mb-6">
-            <video 
-              src={generatedVideo.url} 
-              controls 
-              className="w-full rounded-lg shadow-sm"
-              style={{ maxHeight: '400px' }}
-            />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            {/* Video Player */}
+            <div>
+              <h4 className="font-medium text-gray-900 mb-3">Generated Video</h4>
+              <video 
+                src={generatedVideo.url} 
+                controls 
+                className="w-full rounded-lg shadow-sm"
+                style={{ maxHeight: '300px' }}
+              />
+            </div>
+            
+            {/* Music Player */}
+            <div>
+              <h4 className="font-medium text-gray-900 mb-3">Generated Music</h4>
+              <MusicPlayer 
+                musicParameters={generatedVideo.musicParameters}
+                videoId={generatedVideo.videoId}
+                originalFileName={videoFile?.name || ''}
+              />
+            </div>
           </div>
           
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-            <h4 className="font-medium text-green-800 mb-2">Generated Music Details:</h4>
+            <h4 className="font-medium text-green-800 mb-2">AI Generated Music Details:</h4>
             <div className="grid grid-cols-2 gap-4 text-sm text-green-700">
               <div>Key: {generatedVideo.musicParameters?.key || 'C'}</div>
               <div>BPM: {generatedVideo.musicParameters?.bpm || '85'}</div>
               <div>Energy: {(generatedVideo.musicParameters?.energy * 100)?.toFixed(0) || '50'}%</div>
-              <div>Mood: {generatedVideo.musicParameters?.mood || 'Chill'}</div>
+              <div>Valence: {(generatedVideo.musicParameters?.valence * 100)?.toFixed(0) || '50'}%</div>
             </div>
           </div>
           

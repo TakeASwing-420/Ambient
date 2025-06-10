@@ -2,8 +2,7 @@ import { FC, useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Download } from 'lucide-react';
 import * as Tone from 'tone';
-import Producer from '@/lib/music/producer';
-import Player from '@/lib/music/player';
+import { SimplifiedProducer } from '@/lib/music/simplified_producer';
 import { Track } from '@/lib/music/track';
 import { OutputParams } from '@/types';
 
@@ -20,7 +19,6 @@ const MusicPlayer: FC<MusicPlayerProps> = ({ musicParameters, videoId, originalF
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [track, setTrack] = useState<Track | null>(null);
-  const playerRef = useRef<Player | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -40,13 +38,8 @@ const MusicPlayer: FC<MusicPlayerProps> = ({ musicParameters, videoId, originalF
       }
 
       // Create track from music parameters
-      const producer = new Producer();
+      const producer = new SimplifiedProducer();
       const generatedTrack = producer.produce(musicParameters);
-      
-      // Initialize player
-      const player = new Player();
-      player.playlist = [generatedTrack];
-      playerRef.current = player;
       
       setTrack(generatedTrack);
       setDuration(generatedTrack.length);
@@ -61,34 +54,34 @@ const MusicPlayer: FC<MusicPlayerProps> = ({ musicParameters, videoId, originalF
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
-    if (playerRef.current) {
-      playerRef.current.unload();
-    }
+    Tone.Transport.stop();
+    Tone.Transport.cancel();
   };
 
   const handlePlayPause = async () => {
-    if (!playerRef.current || !track) return;
+    if (!track) return;
 
     try {
       if (isPlaying) {
-        playerRef.current.pause();
+        Tone.Transport.pause();
         setIsPlaying(false);
         if (intervalRef.current) {
           clearInterval(intervalRef.current);
         }
       } else {
-        await playerRef.current.play();
+        Tone.Transport.start();
         setIsPlaying(true);
         
         // Start time tracking
         intervalRef.current = setInterval(() => {
-          if (playerRef.current && Tone.Transport.state === 'started') {
+          if (Tone.Transport.state === 'started') {
             const time = Tone.Transport.seconds;
             setCurrentTime(time);
             
             if (time >= duration) {
               setIsPlaying(false);
               setCurrentTime(0);
+              Tone.Transport.stop();
               if (intervalRef.current) {
                 clearInterval(intervalRef.current);
               }
@@ -108,9 +101,7 @@ const MusicPlayer: FC<MusicPlayerProps> = ({ musicParameters, videoId, originalF
 
   const handleVolumeChange = (newVolume: number) => {
     setVolume(newVolume);
-    if (playerRef.current && playerRef.current.gain) {
-      playerRef.current.gain.gain.value = newVolume;
-    }
+    Tone.Destination.volume.value = Tone.gainToDb(newVolume);
   };
 
   const handleDownload = async () => {
