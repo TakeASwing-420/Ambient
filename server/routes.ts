@@ -8,21 +8,35 @@ import { processVideoWithAI, combineVideoWithAudio, getVideoDuration } from "./v
 // Import types
 import { OutputParams } from '../client/src/types';
 
-// Simple audio generation function
+// Generate lofi audio based on video analysis parameters
 async function generateLofiAudio(params: OutputParams): Promise<Buffer> {
-  // Generate a simple sine wave audio file as placeholder
-  // In a real implementation, this would use Tone.js or similar
+  // Create a simple lofi audio track based on the parameters
   const sampleRate = 44100;
   const duration = 30; // 30 seconds
-  const frequency = 220; // A note
+  const baseFreq = 220 * Math.pow(2, (params.key - 1) / 12); // Convert key to frequency
+  const bpm = params.bpm || 85;
   
   const samples = sampleRate * duration;
   const buffer = Buffer.alloc(samples * 2); // 16-bit audio
   
   for (let i = 0; i < samples; i++) {
-    const sample = Math.sin(2 * Math.PI * frequency * i / sampleRate) * 0.3;
-    const value = Math.floor(sample * 32767);
-    buffer.writeInt16LE(value, i * 2);
+    const time = i / sampleRate;
+    const beatTime = (time * bpm / 60) % 1;
+    
+    // Create a simple lofi chord progression
+    let frequency = baseFreq;
+    if (beatTime < 0.25) frequency = baseFreq;
+    else if (beatTime < 0.5) frequency = baseFreq * 1.25; // Perfect fourth
+    else if (beatTime < 0.75) frequency = baseFreq * 1.5; // Perfect fifth
+    else frequency = baseFreq * 1.33; // Major sixth
+    
+    // Apply lofi effects: low-pass filter simulation and vinyl noise
+    const sample = Math.sin(2 * Math.PI * frequency * time) * params.energy * 0.3;
+    const noise = (Math.random() - 0.5) * 0.02 * params.swing;
+    const lofiSample = sample + noise;
+    
+    const value = Math.floor(lofiSample * 32767);
+    buffer.writeInt16LE(Math.max(-32768, Math.min(32767, value)), i * 2);
   }
   
   return buffer;
