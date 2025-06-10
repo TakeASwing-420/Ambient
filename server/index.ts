@@ -44,7 +44,7 @@ app.use((req, res, next) => {
     const message = err.message || "Internal Server Error";
 
     res.status(status).json({ message });
-    throw err;
+    console.error('Express error:', err);
   });
 
   // ALWAYS serve the app on port 5000
@@ -57,6 +57,11 @@ app.use((req, res, next) => {
 
   server.on('error', (err) => {
     console.error('Server error:', err);
+    process.exit(1);
+  });
+
+  server.on('listening', () => {
+    console.log(`Server successfully listening on port ${port}`);
   });
 
   // Setup Vite/static serving after API routes
