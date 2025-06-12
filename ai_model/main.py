@@ -1,82 +1,70 @@
-import argparse
-import json
+from flask import Flask, request, jsonify
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+import tempfile
+import os
 import torch
+
 from model.lofi2lofi_model import Decoder as Lofi2LofiDecoder
 from lofi2lofi_generate import decode
 
 device = "cpu"
+app = Flask(__name__)
+limiter = Limiter(app=app, key_func=get_remote_address, default_limits=["30 per minute"])
+
 # Load model once
-checkpoint = "f:/Lofify/ai_model/checkpoints/lofi2lofi_decoder.pth"
+checkpoint = "F:\\Lofify\\ai_model\\checkpoints\\lofi2lofi_decoder.pth"
+print("Loading lofi model...", end=" ")
 model = Lofi2LofiDecoder(device=device)
 model.load_state_dict(torch.load(checkpoint, map_location=device))
 model.to(device)
 model.eval()
+print(f"Loaded {checkpoint}.")
 
-def process_video(video_path, output_path):
-    """Process video and generate lofi parameters"""
+
+@app.route('/')
+def home():
+    return 'Server running'
+
+
+@app.route('/decode', methods=['POST'])
+def decode_endpoint():
+    if 'video' not in request.files:
+        response = jsonify({'error': 'No video uploaded'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response, 400
+
+    video_file = request.files['video']
+    if video_file.filename == '':
+        response = jsonify({'error': 'Empty filename'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response, 400
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as tmp:
+        video_path = tmp.name
+        video_file.save(video_path)
+
     try:
         result = decode(model, video_path)
-        
         if result is None:
-            error_result = {"success": False, "error": "Failed to analyze video"}
-            with open(output_path, 'w') as f:
-                json.dump(error_result, f)
-            return error_result
-        
-        # Extract values without defaults - return failure if any are missing
-        try:
-            title = getattr(result, 'title')
-            key = int(getattr(result, 'key'))
-            mode = int(getattr(result, 'mode'))
-            bpm = int(getattr(result, 'bpm'))
-            energy = float(getattr(result, 'energy'))
-            valence = float(getattr(result, 'valence'))
-            swing = float(getattr(result, 'swing'))
-            chords = getattr(result, 'chords')
-            melodies = getattr(result, 'melodies')
-        except AttributeError as e:
-            error_result = {"success": False, "error": f"Missing required attribute: {str(e)}"}
-            with open(output_path, 'w') as f:
-                json.dump(error_result, f)
-            return error_result
-        
-        # Convert result to the expected format
-        success_result = {
-            "success": True,
-            "data": {
-                "title": title,
-                "key": key,
-                "mode": mode,
-                "bpm": bpm,
-                "energy": energy,
-                "valence": valence,
-                "swing": swing,
-                "chords": chords,
-                "melodies": melodies
-            }
-        }
-        
-        # Write result to output file
-        with open(output_path, 'w') as f:
-            json.dump(success_result, f)
-        
-        return success_result
-        
-    except Exception as e:
-        error_result = {"success": False, "error": f"Processing error: {str(e)}"}
-        with open(output_path, 'w') as f:
-            json.dump(error_result, f)
-        return error_result
+            response = jsonify({'error': 'Input video is not lofifiable.'})
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 422
+        elif result == "mood_tag not present":
+            response = jsonify({'error': 'Mood_tag not found.'})
+            response.headers.add('Access-Control-Allow-Origin', '*')
+            return response, 422
 
-def main():
-    parser = argparse.ArgumentParser(description='Process video to generate lofi music parameters')
-    parser.add_argument('--video-path', required=True, help='Path to input video file')
-    parser.add_argument('--output-path', required=True, help='Path to output JSON file')
-    
-    args = parser.parse_args()
-    
-    result = process_video(args.video_path, args.output_path)
-    print(json.dumps(result))
+        response = jsonify(result)
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response, 201
+    except Exception as e:
+        response = jsonify({'error': f'Server error: {str(e)}'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        return response, 500
+    finally:
+        os.remove(video_path)
+
 
 if __name__ == "__main__":
-    main()
+    app.run(host="0.0.0.0", port=8080, debug=True)
