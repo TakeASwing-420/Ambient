@@ -1,20 +1,38 @@
 import { FC, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import VideoUploadZone from './VideoUploadZone';
+import VideoPlayer from './VideoPlayer';
 import MusicPlayer from './MusicPlayer';
-import { VideoFile, GeneratedVideo } from '@/types';
 import { useVideoProcessing } from '@/hooks/useVideoProcessing';
-import { getVideoDuration } from '@/lib/video';
+import { useAudioGeneration } from '@/hooks/useAudioGeneration';
+import { getVideoDuration, formatDuration } from '@/lib/video';
+
+interface VideoFileInfo {
+  file: File;
+  name: string;
+  size: string;
+  duration: string;
+  url: string;
+}
 
 const WorkflowContainer: FC = () => {
-  const [currentStep, setCurrentStep] = useState<number>(1);
-  const [videoFile, setVideoFile] = useState<VideoFile | null>(null);
+  const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [videoFile, setVideoFile] = useState<VideoFileInfo | null>(null);
   const { 
     processVideo, 
     isProcessing, 
-    generatedVideo, 
-    error 
+    result, 
+    error,
+    reset 
   } = useVideoProcessing();
+  const { 
+    generateAudio, 
+    isGenerating, 
+    audioBlob, 
+    error: audioError,
+    downloadAudio,
+    reset: resetAudio 
+  } = useAudioGeneration();
 
   const handleFileUpload = async (file: File) => {
     try {
@@ -61,18 +79,22 @@ const WorkflowContainer: FC = () => {
   const handleStartOver = () => {
     setCurrentStep(1);
     setVideoFile(null);
+    reset();
+    resetAudio();
   };
 
-  const handleDownloadVideo = () => {
-    if (!generatedVideo) return;
-    
+  function handleDownloadVideo(event: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    if (!result?.videoPath) return;
     const link = document.createElement('a');
-    link.href = `/api/download/${generatedVideo.videoId}`;
-    link.download = generatedVideo.filename;
+    link.href = result.videoPath;
+    link.download = videoFile?.name
+      ? videoFile.name.replace(/\.[^/.]+$/, '') + '_lofi.mp4'
+      : 'lofi_video.mp4';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  }
+  // Audio generation happens client-side
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-4xl mx-auto">
@@ -177,42 +199,70 @@ const WorkflowContainer: FC = () => {
       )}
       
       {/* Step 3: Results */}
-      {currentStep === 3 && generatedVideo && (
+      {currentStep === 3 && result && (
         <div className="p-6">
           <h3 className="font-poppins font-semibold text-xl mb-4">Your LoFi Video is Ready!</h3>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Video Player */}
             <div>
-              <h4 className="font-medium text-gray-900 mb-3">Generated Video</h4>
+              <h4 className="font-medium text-gray-900 mb-3">Processed Video</h4>
               <video 
-                src={generatedVideo.url} 
+                src={result.videoPath} 
                 controls 
                 className="w-full rounded-lg shadow-sm"
                 style={{ maxHeight: '300px' }}
               />
             </div>
-            
-            {/* Music Player */}
-            <div>
-              <h4 className="font-medium text-gray-900 mb-3">Generated Music</h4>
-              <MusicPlayer 
-                musicParameters={generatedVideo.musicParameters}
-                videoId={generatedVideo.videoId}
-                originalFileName={videoFile?.name || ''}
-              />
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">Music Parameters</h4>
+                <div className="bg-white p-4 rounded-lg border text-sm">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>Key: {result.musicParams?.key || 'C'}</div>
+                    <div>BPM: {result.musicParams?.bpm || '85'}</div>
+                    <div>Energy: {((result.musicParams?.energy || 0.5) * 100).toFixed(0)}%</div>
+                    <div>Valence: {((result.musicParams?.valence || 0.5) * 100).toFixed(0)}%</div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Audio Generation Controls */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h4 className="font-medium text-gray-900 mb-3">Generate Lofi Audio</h4>
+                
+                <div className="flex gap-3">
+                  <Button 
+                    onClick={() => generateAudio(result.musicParams)}
+                    disabled={isGenerating}
+                    className="flex-1"
+                  >
+                    {isGenerating ? 'Generating Audio...' : 'Generate Audio'}
+                  </Button>
+                  
+                  {audioBlob && (
+                    <Button 
+                      onClick={() => downloadAudio()}
+                      variant="outline"
+                    >
+                      Download Audio
+                    </Button>
+                  )}
+                </div>
+                
+                {audioError && (
+                  <p className="text-red-500 text-sm mt-2">{audioError}</p>
+                )}
+                
+                {audioBlob && (
+                  <p className="text-green-600 text-sm mt-2">
+                    Audio generated successfully! Click download to save.
+                  </p>
+                )}
+              </div>
             </div>
           </div>
           
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-            <h4 className="font-medium text-green-800 mb-2">AI Generated Music Details:</h4>
-            <div className="grid grid-cols-2 gap-4 text-sm text-green-700">
-              <div>Key: {generatedVideo.musicParameters?.key || 'C'}</div>
-              <div>BPM: {generatedVideo.musicParameters?.bpm || '85'}</div>
-              <div>Energy: {(generatedVideo.musicParameters?.energy * 100)?.toFixed(0) || '50'}%</div>
-              <div>Valence: {(generatedVideo.musicParameters?.valence * 100)?.toFixed(0) || '50'}%</div>
-            </div>
-          </div>
+
           
           <div className="flex justify-between">
             <Button 

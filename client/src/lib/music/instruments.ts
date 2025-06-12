@@ -1,5 +1,4 @@
 import * as Tone from 'tone';
-import { SAMPLES_BASE_URL } from './samples';
 
 export enum Instrument {
   /** Salamander grand piano, velocity 6 */
@@ -20,7 +19,8 @@ export enum Instrument {
   Synth
 }
 
-const BASE_URL = `${SAMPLES_BASE_URL}/instruments`;
+const BASE_URL = '/samples/instruments';
+
 export const getInstrument = (instrument: Instrument) => {
   switch (instrument) {
     case Instrument.Piano: {
@@ -52,7 +52,7 @@ export const getInstrument = (instrument: Instrument) => {
           'F#6': 'Fs6.mp3',
           'F#7': 'Fs7.mp3'
         },
-        baseUrl: `${BASE_URL}/piano/`,
+        baseUrl: `${BASE_URL}/salamander-piano-6/`,
         volume: 0
       });
     }
@@ -86,36 +86,41 @@ export const getInstrument = (instrument: Instrument) => {
           'F#6': 'Fs6.mp3',
           'F#7': 'Fs7.mp3'
         },
-        baseUrl: `${BASE_URL}/piano-soft/`,
-        volume: 4
+        baseUrl: `${BASE_URL}/salamander-piano-1/`,
+        volume: 0
       });
     }
 
     case Instrument.ElectricPiano: {
       return new Tone.Sampler({
         urls: {
+          A1: 'A1.mp3',
           A2: 'A2.mp3',
           A3: 'A3.mp3',
           A4: 'A4.mp3',
           A5: 'A5.mp3',
           A6: 'A6.mp3',
+          C1: 'C1.mp3',
           C2: 'C2.mp3',
           C3: 'C3.mp3',
           C4: 'C4.mp3',
           C5: 'C5.mp3',
           C6: 'C6.mp3',
+          C7: 'C7.mp3',
+          'D#1': 'Ds1.mp3',
           'D#2': 'Ds2.mp3',
           'D#3': 'Ds3.mp3',
           'D#4': 'Ds4.mp3',
           'D#5': 'Ds5.mp3',
           'D#6': 'Ds6.mp3',
+          'F#1': 'Fs1.mp3',
           'F#2': 'Fs2.mp3',
           'F#3': 'Fs3.mp3',
           'F#4': 'Fs4.mp3',
           'F#5': 'Fs5.mp3',
           'F#6': 'Fs6.mp3'
         },
-        baseUrl: `${BASE_URL}/piano-electric/`,
+        baseUrl: `${BASE_URL}/electric-piano/`,
         volume: 0
       });
     }
@@ -128,12 +133,11 @@ export const getInstrument = (instrument: Instrument) => {
           A4: 'A4.mp3',
           A5: 'A5.mp3',
           A6: 'A6.mp3',
-          C2: 'C2.mp3',
           C3: 'C3.mp3',
           C4: 'C4.mp3',
           C5: 'C5.mp3',
           C6: 'C6.mp3',
-          'D#2': 'Ds2.mp3',
+          C7: 'C7.mp3',
           'D#3': 'Ds3.mp3',
           'D#4': 'Ds4.mp3',
           'D#5': 'Ds5.mp3',
@@ -156,12 +160,9 @@ export const getInstrument = (instrument: Instrument) => {
           A3: 'A3.mp3',
           A4: 'A4.mp3',
           A5: 'A5.mp3',
-          C2: 'C2.mp3',
           C3: 'C3.mp3',
           C4: 'C4.mp3',
           C5: 'C5.mp3',
-          C6: 'C6.mp3',
-          'D#2': 'Ds2.mp3',
           'D#3': 'Ds3.mp3',
           'D#4': 'Ds4.mp3',
           'D#5': 'Ds5.mp3',
@@ -185,19 +186,16 @@ export const getInstrument = (instrument: Instrument) => {
           C3: 'C3.mp3',
           C4: 'C4.mp3',
           C5: 'C5.mp3',
-          C6: 'C6.mp3',
-          'C#2': 'Cs2.mp3',
           'D#3': 'Ds3.mp3',
           'D#4': 'Ds4.mp3',
           'D#5': 'Ds5.mp3',
-          E2: 'E2.mp3',
           'F#2': 'Fs2.mp3',
           'F#3': 'Fs3.mp3',
           'F#4': 'Fs4.mp3',
           'F#5': 'Fs5.mp3'
         },
         baseUrl: `${BASE_URL}/guitar-electric/`,
-        volume: -10
+        volume: 0
       });
     }
 

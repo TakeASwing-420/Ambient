@@ -1,6 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { serveStatic, log } from "./vite";
 import { promises as fs } from "fs";
 
 const app = express();
@@ -48,7 +48,15 @@ async function startServer() {
     if (process.env.NODE_ENV !== "production") {
       const { createServer } = await import("vite");
       const vite = await createServer({
-        server: { middlewareMode: true },
+        server: { 
+          middlewareMode: true,
+          allowedHosts: [
+            "9b46b760-6171-4dd1-be01-a06257994652-00-2brlcd5rb320q.riker.replit.dev",
+            ".replit.dev",
+            ".repl.co", 
+            "localhost"
+          ]
+        },
         appType: "spa",
       });
       

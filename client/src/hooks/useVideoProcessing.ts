@@ -1,22 +1,31 @@
 import { useState } from 'react';
 import { GeneratedVideo } from '@/types';
 
+interface VideoProcessingResult {
+  success: boolean;
+  videoId: number;
+  musicParams: any;
+  videoPath: string;
+  message: string;
+}
+
 interface UseVideoProcessingReturn {
   processVideo: (file: File) => Promise<void>;
   isProcessing: boolean;
-  generatedVideo: GeneratedVideo | null;
+  result: VideoProcessingResult | null;
   error: string | null;
+  reset: () => void;
 }
 
 export const useVideoProcessing = (): UseVideoProcessingReturn => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [generatedVideo, setGeneratedVideo] = useState<GeneratedVideo | null>(null);
+  const [result, setResult] = useState<VideoProcessingResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const processVideo = async (file: File): Promise<void> => {
     setIsProcessing(true);
     setError(null);
-    setGeneratedVideo(null);
+    setResult(null);
 
     try {
       const formData = new FormData();
@@ -41,8 +50,13 @@ export const useVideoProcessing = (): UseVideoProcessingReturn => {
           musicParameters: result.musicParameters,
           videoId: result.videoId
         };
-        
-        setGeneratedVideo(generatedVideo);
+       setResult({
+          success: result.success,
+          videoId: result.videoId,
+          musicParams: result.musicParameters,
+          videoPath: `/api/video/${result.videoId}`,
+          message: result.message || 'Video processed successfully'
+        });
       } else {
         throw new Error(result.error || 'Processing failed');
       }
@@ -58,7 +72,12 @@ export const useVideoProcessing = (): UseVideoProcessingReturn => {
   return {
     processVideo,
     isProcessing,
-    generatedVideo,
-    error
+    result,
+    error,
+    reset: () => {
+      setResult(null);
+      setError(null);
+      setIsProcessing(false);
+    }
   };
 };

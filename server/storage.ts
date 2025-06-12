@@ -1,10 +1,3 @@
-import { 
-  users, type User, type InsertUser,
-  videoUploads, type VideoUpload, type InsertVideoUpload,
-  lofiVideos, type LofiVideo, type InsertLofiVideo
-} from "@shared/schema";
-import { insertVideoUploadSchema, insertLofiVideoSchema } from "@shared/schema";
-
 export interface IStorage {
   // User-related methods
   getUser(id: number): Promise<User | undefined>;
@@ -21,6 +14,53 @@ export interface IStorage {
   createLofiVideo(video: InsertLofiVideo): Promise<LofiVideo>;
 }
 
+// Types
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  createdAt: Date;
+}
+
+interface InsertUser {
+  username: string;
+  email: string;
+}
+
+interface VideoUpload {
+  id: number;
+  filename: string;
+  originalName: string;
+  path: string;
+  mimeType: string;
+  size: number;
+  createdAt: Date;
+}
+
+interface InsertVideoUpload {
+  filename: string;
+  originalName: string;
+  path: string;
+  mimeType: string;
+  size: number;
+}
+
+interface LofiVideo {
+  id: number;
+  sourceVideoId: number;
+  musicParams: string;
+  outputPath: string;
+  title: string;
+  createdAt: Date;
+}
+
+interface InsertLofiVideo {
+  sourceVideoId: number;
+  musicParams: string;
+  outputPath: string;
+  title: string;
+}
+
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private videoUploads: Map<number, VideoUpload>;
@@ -34,31 +74,35 @@ export class MemStorage implements IStorage {
     this.users = new Map();
     this.videoUploads = new Map();
     this.lofiVideos = new Map();
-    
     this.userIdCounter = 1;
     this.videoUploadIdCounter = 1;
     this.lofiVideoIdCounter = 1;
   }
 
-  // User methods
   async getUser(id: number): Promise<User | undefined> {
     return this.users.get(id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    for (const user of Array.from(this.users.values())) {
+      if (user.username === username) {
+        return user;
+      }
+    }
+    return undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userIdCounter++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      createdAt: new Date()
+    };
     this.users.set(id, user);
     return user;
   }
 
-  // Video upload methods
   async getVideoUpload(id: number): Promise<VideoUpload | undefined> {
     return this.videoUploads.get(id);
   }
@@ -66,61 +110,29 @@ export class MemStorage implements IStorage {
   async createVideoUpload(upload: InsertVideoUpload): Promise<VideoUpload> {
     const id = this.videoUploadIdCounter++;
     const videoUpload: VideoUpload = {
-      id,
       ...upload,
-      uploadedAt: new Date()
+      id,
+      createdAt: new Date()
     };
     this.videoUploads.set(id, videoUpload);
     return videoUpload;
   }
 
-  // Lofi video methods
   async getLofiVideo(id: number): Promise<LofiVideo | undefined> {
     return this.lofiVideos.get(id);
   }
 
   async getLofiVideosBySourceVideo(sourceVideoId: number): Promise<LofiVideo[]> {
     return Array.from(this.lofiVideos.values()).filter(
-      (video) => video.sourceVideoId === sourceVideoId,
+      video => video.sourceVideoId === sourceVideoId
     );
   }
 
   async createLofiVideo(track: InsertLofiVideo): Promise<LofiVideo> {
     const id = this.lofiVideoIdCounter++;
     const lofiVideo: LofiVideo = {
+      ...track,
       id,
-      sourceVideoId: track.sourceVideoId,
-      musicParameters: {
-        title: typeof track.musicParameters === 'object' && track.musicParameters !== null 
-          ? (track.musicParameters as any).title 
-          : undefined,
-        key: typeof track.musicParameters === 'object' && track.musicParameters !== null 
-          ? Number((track.musicParameters as any).key) || 1
-          : 1,
-        mode: typeof track.musicParameters === 'object' && track.musicParameters !== null 
-          ? Number((track.musicParameters as any).mode) || 1
-          : 1,
-        bpm: typeof track.musicParameters === 'object' && track.musicParameters !== null 
-          ? Number((track.musicParameters as any).bpm) || 85
-          : 85,
-        energy: typeof track.musicParameters === 'object' && track.musicParameters !== null 
-          ? Number((track.musicParameters as any).energy) || 0.5
-          : 0.5,
-        valence: typeof track.musicParameters === 'object' && track.musicParameters !== null 
-          ? Number((track.musicParameters as any).valence) || 0.5
-          : 0.5,
-        swing: typeof track.musicParameters === 'object' && track.musicParameters !== null 
-          ? Number((track.musicParameters as any).swing) || 0.5
-          : 0.5,
-        chords: typeof track.musicParameters === 'object' && track.musicParameters !== null && Array.isArray((track.musicParameters as any).chords)
-          ? (track.musicParameters as any).chords
-          : [],
-        melodies: typeof track.musicParameters === 'object' && track.musicParameters !== null && Array.isArray((track.musicParameters as any).melodies)
-          ? (track.musicParameters as any).melodies
-          : []
-      },
-      storageKey: track.storageKey,
-      filename: track.filename,
       createdAt: new Date()
     };
     this.lofiVideos.set(id, lofiVideo);

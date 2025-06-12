@@ -1,18 +1,18 @@
-import os
 import torch
-from output import *
+from output import Output
 from videoprocessor import predict_music_features
 from typing import Optional
-from model.lofi2lofi_model import Lofi2LofiModel
+from model.lofi2lofi_model import Decoder as Lofi2LofiDecoder
+from model.constants import HIDDEN_SIZE
 
 checkers = ["chill and lofi", "bright and happy", "calm and ambient", "uplifting and hopeful", "nostalgic and sentimental", "playful and fun", "romantic and emotional", "peaceful and serene", "melancholic and reflective", "energetic and upbeat", "adventurous and exploratory"]
 
-def decode(model: Lofi2LofiModel, video_path: str) -> Optional[str]:
+def decode(model: Lofi2LofiDecoder, video_path: str) -> Optional[str]:
     mu = torch.randn(1, HIDDEN_SIZE)
 
     lofify = predict_music_features(video_path)
     is_lofifiable = any(lofify["mood_tag"]==x for x in checkers)
-    
+
     if is_lofifiable:
         hash, (pred_chords, pred_notes, _, pred_key, pred_mode, _, _) = model.decode(mu)
         output = Output(hash, pred_chords, pred_notes, lofify["tempo"], pred_key, pred_mode, lofify["valence"], lofify["energy"],lofify["swing"])

@@ -2,7 +2,7 @@ import { FC, useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, SkipBack, SkipForward, Volume2, Download } from 'lucide-react';
 import * as Tone from 'tone';
-import { SimplifiedProducer } from '@/lib/music/simplified_producer';
+import { Producer } from '@/lib/music/producer';
 import { Track } from '@/lib/music/track';
 import { OutputParams } from '@/types';
 
@@ -38,8 +38,8 @@ const MusicPlayer: FC<MusicPlayerProps> = ({ musicParameters, videoId, originalF
       }
 
       // Create track from music parameters
-      const producer = new SimplifiedProducer();
-      const generatedTrack = producer.produce(musicParameters);
+      const producer = new Producer(musicParameters);
+      const generatedTrack = producer.produce();
       
       setTrack(generatedTrack);
       setDuration(generatedTrack.length);
@@ -142,7 +142,6 @@ const MusicPlayer: FC<MusicPlayerProps> = ({ musicParameters, videoId, originalF
           {track?.title || 'Generated LoFi Track'}
         </h3>
         <div className="text-sm text-gray-600">
-          <span>{track?.key} {track?.mode}</span>
           <span className="mx-2">•</span>
           <span>{track?.bpm} BPM</span>
         </div>

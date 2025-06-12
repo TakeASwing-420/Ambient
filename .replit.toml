@@ -1,4 +1,0 @@
-[workflows]
-
-[workflows."Start application"]
-command = "npm run dev"

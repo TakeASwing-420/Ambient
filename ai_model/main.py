@@ -1,21 +1,21 @@
 import argparse
 import json
-import os
-import sys
+import torch
+from model.lofi2lofi_model import Decoder as Lofi2LofiDecoder
+from lofi2lofi_generate import decode
 
-# Try to import the full AI model, fallback to simplified version
-try:
-    from videoprocessor import predict_music_features
-    print("Using full AI model for video processing")
-except ImportError as e:
-    print(f"Full AI model unavailable ({e}), using fallback processor")
-    from fallback_processor import predict_music_features
+device = "cpu"
+# Load model once
+checkpoint = "f:/Lofify/ai_model/checkpoints/lofi2lofi_decoder.pth"
+model = Lofi2LofiDecoder(device=device)
+model.load_state_dict(torch.load(checkpoint, map_location=device))
+model.to(device)
+model.eval()
 
 def process_video(video_path, output_path):
     """Process video and generate lofi parameters"""
     try:
-        # Use the videoprocessor to analyze the video
-        result = predict_music_features(video_path)
+        result = decode(model, video_path)
         
         if result is None:
             error_result = {"success": False, "error": "Failed to analyze video"}
