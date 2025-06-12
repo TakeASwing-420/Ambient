@@ -32,7 +32,6 @@ interface VideoUpload {
   filename: string;
   originalName: string;
   path: string;
-  mimeType: string;
   size: number;
   createdAt: Date;
 }
@@ -41,7 +40,6 @@ interface InsertVideoUpload {
   filename: string;
   originalName: string;
   path: string;
-  mimeType: string;
   size: number;
 }
 

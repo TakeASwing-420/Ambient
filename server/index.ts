@@ -1,5 +1,4 @@
 import express, { type Request, Response, NextFunction } from "express";
-import { registerRoutes } from "./routes";
 import { serveStatic, log } from "./vite";
 import { promises as fs } from "fs";
 
@@ -42,8 +41,6 @@ fs.mkdir('temp', { recursive: true }).catch(() => {});
 
 async function startServer() {
   try {
-    await registerRoutes(app);
-
     // Setup Vite/static serving after API routes
     if (process.env.NODE_ENV !== "production") {
       const { createServer } = await import("vite");
@@ -72,7 +69,7 @@ async function startServer() {
       console.error('Express error:', err);
     });
 
-    const port = Number(process.env.PORT) || 5000;
+    const port = Number(process.env.PORT) || 8081;
     const server = app.listen(port, "0.0.0.0", () => {
       log(`Lofify server running on http://0.0.0.0:${port}`);
       console.log(`Server successfully listening on port ${port}`);

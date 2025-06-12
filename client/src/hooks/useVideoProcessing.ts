@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { GeneratedVideo } from '@/types';
+import { useState } from "react";
+import { decode } from "@/lib/videoProcessor";
+import { storage } from "@/lib/storage";
 
 interface VideoProcessingResult {
   success: boolean;
@@ -28,42 +29,40 @@ export const useVideoProcessing = (): UseVideoProcessingReturn => {
     setResult(null);
 
     try {
-      const formData = new FormData();
-      formData.append('video', file);
-
-      const response = await fetch('/api/process-video', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to process video');
-      }
-
-      if (result.success) {
-        const generatedVideo: GeneratedVideo = {
-          url: `/api/video/${result.videoId}`,
-          filename: result.filename,
-          originalFileName: file.name,
-          musicParameters: result.musicParameters,
-          videoId: result.videoId
-        };
-       setResult({
-          success: result.success,
-          videoId: result.videoId,
-          musicParams: result.musicParameters,
-          videoPath: `/api/video/${result.videoId}`,
-          message: result.message || 'Video processed successfully'
-        });
+      const result = await decode(file);
+      console.log("Video processing result:", result);
+      if (!result) {
+        throw new Error("Failed to process video");
       } else {
-        throw new Error(result.error || 'Processing failed');
+        const videoPath = file.webkitRelativePath;
+
+        // Store video upload information
+        const videoUpload = await storage.createVideoUpload({
+          filename: file.name || "uploaded-video",
+          originalName: file.name || "video",
+          path: videoPath,
+          size: file.size,
+        });
+
+        const lofiVideo = await storage.createLofiVideo({
+          sourceVideoId: videoUpload.id,
+          musicParams: JSON.stringify(result),
+          outputPath: videoPath,
+          title: result.title || "Untitled",
+        });
+        setResult({
+          success: true,
+          videoId: lofiVideo.id,
+          musicParams: result,
+          videoPath: `/api/video/${lofiVideo.id}`,
+          message: "Video processed successfully",
+        });
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
+      const errorMessage =
+        err instanceof Error ? err.message : "An unknown error occurred";
       setError(errorMessage);
-      console.error('Video processing error:', err);
+      console.error("Video processing error:", err);
     } finally {
       setIsProcessing(false);
     }
@@ -78,6 +77,6 @@ export const useVideoProcessing = (): UseVideoProcessingReturn => {
       setResult(null);
       setError(null);
       setIsProcessing(false);
-    }
+    },
   };
 };

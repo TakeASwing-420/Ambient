@@ -6,3 +6,6 @@ vite.config.ts.*
 *.tar.gz
 attached_assets/
 .venv/
+temp/
+__pycache__/
+model/__pycache__/
