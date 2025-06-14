@@ -1,22 +1,18 @@
 import * as Tone from 'tone';
-// Helper function inline to avoid import issues
-const randomFromInterval = (min: number, max: number, seed?: number) => {
-  if (seed !== undefined) {
-    const x = Math.sin(seed) * 10000;
-    const random = x - Math.floor(x);
-    return Math.floor(random * (max - min + 1)) + min;
-  }
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
+import { randomFromInterval } from './helper';
+import sampleConfig from './samples.json';
 
-export const SAMPLES_BASE_URL = '/samples';
+export const SAMPLES_BASE_URL = './samples';
 export const SAMPLE_DEFAULT_VOLUME = -6;
 
-/** A SampleGroup defines a collection of samples */
+/** A SampleGroup defines a collection of samples, as taken from samples.json */
 class SampleGroup {
   name: string;
+
   volume: number;
+
   size: number;
+
   energyRanges?: number[][];
 
   public constructor(name: string, size: number, volume: number, energyRanges?: number[][]) {
@@ -52,55 +48,31 @@ class SampleGroup {
     }
     return [];
   }
-
-  /**
-   * Returns an appropriate sample for a given energy level
-   */
-  getSampleForEnergy(energy: number, seed: number): number {
-    if (!this.energyRanges) {
-      return this.getRandomSample(seed);
-    }
-
-    const energyLevel = Math.floor(energy * this.energyRanges.length);
-    const clampedEnergyLevel = Math.min(energyLevel, this.energyRanges.length - 1);
-    const [min, max] = this.energyRanges[clampedEnergyLevel];
-
-    return randomFromInterval(min, max, seed);
-  }
 }
 
-// Sample configuration
-const sampleConfig = {
-  "drumloop100": { size: 1, volume: 0 },
-  "drumloop105": { size: 1, volume: 0 },
-  "drumloop110": { size: 1, volume: 0 },
-  "drumloop120": { size: 1, volume: 0 },
-  "drumloop130": { size: 1, volume: 0 },
-  "drumloop140": { size: 1, volume: 0 },
-  "vinyl": { size: 4, volume: -12 },
-  "rain": { size: 4, volume: -18 },
-  "cafe": { size: 2, volume: -15 }
-};
+export const SAMPLEGROUPS: Map<string, SampleGroup> = sampleConfig.loops.reduce(
+  (map, sampleGroup) => {
+    map.set(
+      sampleGroup.name,
+      new SampleGroup(
+        sampleGroup.name,
+        sampleGroup.size,
+        sampleGroup.volume,
+        sampleGroup.energyRanges
+      )
+    );
+    return map;
+  },
+  new Map()
+);
 
-export const SAMPLEGROUPS = new Map([
-  ['drumloop100', new SampleGroup('drumloop100', sampleConfig.drumloop100.size, sampleConfig.drumloop100.volume)],
-  ['drumloop105', new SampleGroup('drumloop105', sampleConfig.drumloop105.size, sampleConfig.drumloop105.volume)],
-  ['drumloop110', new SampleGroup('drumloop110', sampleConfig.drumloop110.size, sampleConfig.drumloop110.volume)],
-  ['drumloop120', new SampleGroup('drumloop120', sampleConfig.drumloop120.size, sampleConfig.drumloop120.volume)],
-  ['drumloop130', new SampleGroup('drumloop130', sampleConfig.drumloop130.size, sampleConfig.drumloop130.volume)],
-  ['drumloop140', new SampleGroup('drumloop140', sampleConfig.drumloop140.size, sampleConfig.drumloop140.volume)],
-  ['vinyl', new SampleGroup('vinyl', sampleConfig.vinyl.size, sampleConfig.vinyl.volume)],
-  ['rain', new SampleGroup('rain', sampleConfig.rain.size, sampleConfig.rain.volume)],
-  ['cafe', new SampleGroup('cafe', sampleConfig.cafe.size, sampleConfig.cafe.volume)]
-]);
+/** Selects a suitable drumbeat based on BPM and energy value */
+export const selectDrumbeat = (bpm: number, energy: number): [string, number] => {
+  const sampleGroup = `drumloop${bpm}`;
 
-/**
- * Selects appropriate drumbeat BPM based on track BPM
- */
-export const selectDrumbeat = (bpm: number): string => {
-  const availableBpms = [100, 105, 110, 120, 130, 140];
-  const closest = availableBpms.reduce((prev, curr) => 
-    Math.abs(curr - bpm) < Math.abs(prev - bpm) ? curr : prev
+  const index = SAMPLEGROUPS.get(sampleGroup).energyRanges.findIndex(
+    (range) => range[0] <= energy && range[1] >= energy
   );
-  return `drumloop${closest}`;
+
+  return [sampleGroup, index];
 };

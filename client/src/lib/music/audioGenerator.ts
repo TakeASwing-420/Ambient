@@ -12,9 +12,10 @@ export class AudioGenerator {
    */
   static async generateAudio(params: OutputParams): Promise<Blob> {
     try {
+      console.log("Generating audio with params:", params);
       // Create producer and generate track
-      const producer = new Producer(params);
-      const track = producer.produce();
+      const producer = new Producer();
+      const track = producer.produce(params);
       
       // Create audio using Tone.js
       const creator = new Creator(track);

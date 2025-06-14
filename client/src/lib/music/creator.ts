@@ -26,7 +26,9 @@ export class Creator {
     this.instruments = new Map();
 
     // Load sample players
-    for (const [sampleGroupName, sampleIndex] of Array.from(this.currentTrack.samples)) {
+    for (const [sampleGroupName, sampleIndex] of Array.from(
+      this.currentTrack.samples
+    )) {
       const sampleGroup = Samples.SAMPLEGROUPS.get(sampleGroupName);
       if (!sampleGroup) continue;
 
@@ -36,9 +38,15 @@ export class Creator {
         loop: true,
         fadeIn: "8n",
         fadeOut: "8n",
-      })
-        .chain(...sampleGroup.getFilters(), this.gain, Tone.getDestination())
-        .sync();
+      });
+      console.log(
+        `Loading sample: ${sampleGroupName} at index ${sampleIndex} with URL: ${sampleGroup.getSampleUrl(sampleIndex)}`
+      );
+      player.chain(
+        ...sampleGroup.getFilters(),
+        this.gain
+      );
+      player.sync();
 
       if (!this.samplePlayers.has(sampleGroupName)) {
         this.samplePlayers.set(sampleGroupName, Array(sampleGroup.size));
@@ -46,67 +54,90 @@ export class Creator {
       this.samplePlayers.get(sampleGroupName)![sampleIndex] = player;
     }
 
-    // Load instruments
+    // load instruments
     const instrumentVolumes = new Map();
-    for (const instrument of Array.from(this.currentTrack.instruments)) {
-      const toneInstrument = getInstrument(instrument);
-      const filters = getInstrumentFilters(instrument);
-      
-      toneInstrument.chain(...filters, this.gain, Tone.getDestination());
+    for (const instrument of this.currentTrack.instruments) {
+      const toneInstrument = getInstrument(instrument)
+        .chain(
+          ...getInstrumentFilters(instrument),
+          this.gain
+        )
+        .sync();
       this.instruments.set(instrument, toneInstrument);
       instrumentVolumes.set(toneInstrument, toneInstrument.volume.value);
+      console.log(
+        `Loading instrument: ${instrument} with volume: ${toneInstrument.volume.value}`
+      );
     }
 
-    // Schedule sample loops
+    // set up swing
+    Tone.getTransport().swing = this.currentTrack.swing ? 2 / 3 : 0;
+
+    // wait until all samples are loaded
+    await Tone.loaded();
+
     for (const sampleLoop of this.currentTrack.sampleLoops) {
-      const players = this.samplePlayers.get(sampleLoop.sampleGroupName);
-      if (players && players[sampleLoop.sampleIndex]) {
-        const player = players[sampleLoop.sampleIndex];
-        player.start(sampleLoop.startTime);
-        player.stop(sampleLoop.stopTime);
-      }
+      const samplePlayer = this.samplePlayers.get(sampleLoop.sampleGroupName)[
+        sampleLoop.sampleIndex
+      ];
+      samplePlayer.start(sampleLoop.startTime);
+      samplePlayer.stop(sampleLoop.stopTime);
+      console.log(
+        `Starting sample loop: ${sampleLoop.sampleGroupName} at index ${sampleLoop.sampleIndex} from ${sampleLoop.startTime} to ${sampleLoop.stopTime}`
+      );
     }
 
-    // Schedule instrument notes
-    for (const note of this.currentTrack.instrumentNotes) {
-      const instrument = this.instruments.get(note.instrument);
-      if (instrument) {
-        instrument.triggerAttackRelease(
-          note.pitch,
-          note.duration,
-          note.time,
-          note.velocity || 1
+    for (const noteTiming of this.currentTrack.instrumentNotes) {
+      const instrumentSampler = this.instruments.get(noteTiming.instrument);
+      if (noteTiming.duration) {
+        instrumentSampler.triggerAttackRelease(
+          noteTiming.pitch,
+          noteTiming.duration,
+          noteTiming.time,
+          noteTiming.velocity !== undefined ? noteTiming.velocity : 1
+        );
+      } else {
+        instrumentSampler.triggerAttack(
+          noteTiming.pitch,
+          noteTiming.time,
+          noteTiming.velocity !== undefined ? noteTiming.velocity : 1
         );
       }
-    }
 
-    // Connect recorder
+      console.log(
+        `Scheduling note: ${noteTiming.instrument} playing ${noteTiming.pitch} at ${noteTiming.time} with duration ${noteTiming.duration} and velocity ${noteTiming.velocity}`
+      );
+    }
     this.gain.connect(this.recorder);
 
-    // Fade out effect
-    const fadeOutBegin = this.currentTrack.length - 10;
-    const fadeOutInterval = setInterval(() => {
-      const seconds = Tone.getTransport().seconds;
-      if (seconds >= this.currentTrack.length) {
-        clearInterval(fadeOutInterval);
-        return;
-      }
+    const fadeOutBegin =
+      this.currentTrack.length - this.currentTrack.fadeOutDuration;
 
-      const volumeOffset = seconds < fadeOutBegin ? 0 : (seconds - fadeOutBegin) * 4;
+    // schedule events to do every 100ms
+    Tone.getTransport().scheduleRepeat((time) => {
+      const seconds = Tone.getTransport().getSecondsAtTime(time);
+      // schedule fade out in the last seconds
+      const volumeOffset =
+        seconds < fadeOutBegin ? 0 : (seconds - fadeOutBegin) * 4;
       instrumentVolumes.forEach((volume, sampler) => {
         sampler.volume.value = volume - volumeOffset;
       });
-    }, 100);
-
+    }, 0.1);
+    
+    console.log(
+      `Transport scheduled to repeat every 100ms with fade out starting at ${fadeOutBegin} seconds`
+    );
     // Record and return audio blob
     return await this.recordAndSave();
   }
 
   private async recordAndSave(): Promise<Blob> {
     await Tone.start();
+    console.log("Starting audio recording...");
     this.recorder.start();
+    console.log("Audio recording started");
     Tone.getTransport().start();
-
+    console.log("Transport started");
     return new Promise((resolve) => {
       setTimeout(async () => {
         const recording = await this.recorder.stop();
@@ -119,15 +150,15 @@ export class Creator {
 
   dispose() {
     // Clean up Tone.js objects
-    this.samplePlayers.forEach(players => {
-      players.forEach(player => {
+    this.samplePlayers.forEach((players) => {
+      players.forEach((player) => {
         if (player) {
           player.dispose();
         }
       });
     });
 
-    this.instruments.forEach(instrument => {
+    this.instruments.forEach((instrument) => {
       instrument.dispose();
     });
 

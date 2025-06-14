@@ -1,9 +1,68 @@
 import * as Tonal from '@tonaljs/tonal';
 import { Time } from 'tone/build/esm/core/type/Units';
 import { Instrument } from './instruments';
+import { OutputParams } from '@/types';
 
 /**
- * A sample loop with timing information
+ * A Track contains the elements that make up a lo-fi track.
+ * Every Track has time signature 4/4.
+ */
+class Track {
+  /** Root note of key, e.g. 'Db' */
+  key: string;
+
+  keyNum: number;
+
+  /** Musical mode of key, e.g. 'major' or 'lydian' */
+  mode: string;
+
+  modeNum: number;
+
+  /** Title of the track */
+  title: string;
+
+  /** Tempo in BPM (beats per minute) */
+  bpm: number = 100;
+
+  /** Whether to swing eighth notes */
+  swing: boolean = false;
+
+  /** Number of measures; each measure contains four beats */
+  numMeasures: number = 60;
+
+  /** Number of seconds to fade out at the end */
+  fadeOutDuration: number = 10;
+
+  /** Total length of the track in seconds */
+  get length() {
+    return Math.ceil(((this.numMeasures * 4) / this.bpm) * 60);
+  }
+
+  /** List of (sampleGroupName, sampleIndex) */
+  samples: [string, number][];
+
+  /** Sample loops */
+  sampleLoops: SampleLoop[];
+
+  /** Instruments to use, by name */
+  instruments: Instrument[];
+
+  /** Timings of notes */
+  instrumentNotes: InstrumentNote[];
+
+  /** Color of cover */
+  color: string;
+
+  /** The output params that generated this track */
+  outputParams: OutputParams;
+
+  public constructor(init?: Partial<Track>) {
+    Object.assign(this, init);
+  }
+}
+
+/**
+ * Specifies a sample loop with a Tone.js start time and end time
  */
 class SampleLoop {
   /** Name of the sample group */
@@ -63,54 +122,4 @@ class InstrumentNote {
   }
 }
 
-/**
- * A Track contains the full information required to play a lofi track,
- * including sample loops, instrument notes, and metadata
- */
-export class Track {
-  /** Track title */
-  title: string;
-
-  /** Beats per minute */
-  bpm: number;
-
-  /** Track length in seconds */
-  length: number;
-
-  /** Map of sample group name to sample index */
-  samples: Map<string, number>;
-
-  /** List of unique instruments used in this track */
-  instruments: Set<Instrument>;
-
-  /** List of all sample loops in this track */
-  sampleLoops: SampleLoop[];
-
-  /** List of all instrument notes in this track */
-  instrumentNotes: InstrumentNote[];
-
-  /** Track color for visualization */
-  color: string;
-
-  constructor(
-    title: string,
-    bpm: number,
-    length: number,
-    samples: Map<string, number>,
-    instruments: Set<Instrument>,
-    sampleLoops: SampleLoop[],
-    instrumentNotes: InstrumentNote[],
-    color: string
-  ) {
-    this.title = title;
-    this.bpm = bpm;
-    this.length = length;
-    this.samples = samples;
-    this.instruments = instruments;
-    this.sampleLoops = sampleLoops;
-    this.instrumentNotes = instrumentNotes;
-    this.color = color;
-  }
-}
-
-export { SampleLoop, InstrumentNote };
+export { Track, SampleLoop, InstrumentNote };

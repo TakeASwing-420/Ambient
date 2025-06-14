@@ -20,6 +20,6 @@ export const decode = async (videoFile: File): Promise<OutputParams> => {
   }
 
   const data = await response.json();
-  return data as OutputParams;
+  return JSON.parse(data) as OutputParams;
 };
 

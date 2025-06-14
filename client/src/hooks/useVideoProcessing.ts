@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { decode } from "@/lib/videoProcessor";
 import { storage } from "@/lib/storage";
+import { OutputParams } from "@/types";
 
 interface VideoProcessingResult {
   success: boolean;
   videoId: number;
-  musicParams: any;
   videoPath: string;
   message: string;
 }
 
 interface UseVideoProcessingReturn {
-  processVideo: (file: File) => Promise<void>;
+  processVideo: (file: File) => Promise<OutputParams>;
   isProcessing: boolean;
   result: VideoProcessingResult | null;
   error: string | null;
@@ -23,14 +23,13 @@ export const useVideoProcessing = (): UseVideoProcessingReturn => {
   const [result, setResult] = useState<VideoProcessingResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const processVideo = async (file: File): Promise<void> => {
+  const processVideo = async (file: File): Promise<OutputParams> => {
     setIsProcessing(true);
     setError(null);
     setResult(null);
 
     try {
       const result = await decode(file);
-      console.log("Video processing result:", result);
       if (!result) {
         throw new Error("Failed to process video");
       } else {
@@ -53,10 +52,10 @@ export const useVideoProcessing = (): UseVideoProcessingReturn => {
         setResult({
           success: true,
           videoId: lofiVideo.id,
-          musicParams: result,
           videoPath: `/api/video/${lofiVideo.id}`,
           message: "Video processed successfully",
         });
+        return result;
       }
     } catch (err) {
       const errorMessage =

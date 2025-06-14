@@ -1,229 +1,424 @@
 import * as Tonal from '@tonaljs/tonal';
+import * as Tone from 'tone';
 import { Time } from 'tone/build/esm/core/type/Units';
 import { InstrumentNote, SampleLoop, Track } from './track';
 import { OutputParams } from '@/types';
 import {
+  addTime,
   Chord,
   keyNumberToString,
   mapNote,
+  measuresToSeconds,
+  mountNotesOnScale,
+  octShift,
+  octShiftAll,
   randomColor,
   randomFromInterval,
+  subtractTime
 } from './helper';
 import { SAMPLEGROUPS, selectDrumbeat } from './samples';
 import { Instrument } from './instruments';
-
-/**
- * Producer preset configurations
- */
-interface ProducerPreset {
-  name: string;
-  trackLength: number;
-  instrumentProbabilities: Map<Instrument, number>;
-  sampleProbabilities: Map<string, number>;
-}
-
-const DEFAULT_PRESET: ProducerPreset = {
-  name: "Default",
-  trackLength: 120,
-  instrumentProbabilities: new Map([
-    [Instrument.Piano, 0.8],
-    [Instrument.SoftPiano, 0.6],
-    [Instrument.ElectricPiano, 0.4],
-    [Instrument.AcousticGuitar, 0.3],
-    [Instrument.BassGuitar, 0.5],
-    [Instrument.Harp, 0.2],
-    [Instrument.Synth, 0.3]
-  ]),
-  sampleProbabilities: new Map([
-    ['vinyl', 0.7],
-    ['rain', 0.4],
-    ['cafe', 0.3]
-  ])
-};
+import * as Presets from './producer_presets';
 
 /**
  * The producer takes OutputParams to produce a Track.
  * The production process is deterministic, i.e. the same input will always yield the same output.
  */
-class Producer {
+export class Producer {
   tonic: string;
-  keyNum: number;
-  mode: string;
-  modeNum: number;
-  energy: number;
-  valence: number;
-  swing: number;
-  preset: ProducerPreset;
-  notesInScale: string[];
-  notesInScalePitched: string[];
-  chords: Chord[];
-  melodies: number[][];
-  bpm: number;
-  title: string;
 
-  constructor(params: OutputParams) {
+  keyNum: number;
+
+  mode: string;
+
+  modeNum: number;
+
+  /** How energetic the track should be, 0 (less energetic) to 1 (very energetic) */
+  energy: number;
+
+  /** How positive the music should be, 0 (sad) to 1 (cheerful) */
+  valence: number;
+
+  /** A continuous value between [0, 1] that denotes the swing ratio of the track */
+  swing: number;
+
+  preset: Presets.ProducerPreset;
+
+  notesInScale: string[];
+
+  notesInScalePitched: string[];
+
+  chordsInScale: string[];
+
+  chords: number[];
+
+  chordsTonal: Chord[];
+
+  melodies: number[][];
+
+  bpm: number;
+
+  numMeasures: number;
+
+  introLength: number;
+
+  mainLength: number;
+
+  outroLength: number;
+
+  samples: [string, number][] = [];
+
+  sampleLoops: SampleLoop[] = [];
+
+  instruments: Instrument[] = [];
+
+  instrumentNotes: InstrumentNote[] = [];
+
+  /** Drum beat timings, as tuples of (isStart, Time) */
+  drumbeatTimings: [boolean, Time][] = [];
+
+  /** Takes OutputParams and deterministically produces a Track */
+  produce(params: OutputParams): Track {
+    console.log("BPM:", params.bpm);
+    // must be 70, 75, 80, 85, 90, 95 or 100
+    let bpm = Math.round(params.bpm / 5) * 5;
+    if (bpm < 70) bpm = 70;
+    if (bpm > 100) bpm = 100;
+    this.bpm = bpm;
+    console.log("BPM set to", this.bpm);
+    // tonic note, e.g. 'G'
+    console.log("Key number:", params.key);
+    this.tonic = keyNumberToString(params.key);
     this.keyNum = params.key;
-    this.tonic = keyNumberToString(this.keyNum);
+    console.log(`Tonic: ${this.tonic} (key number: ${this.keyNum})`);
+    // musical mode, e.g. 'ionian'
+    this.mode = Tonal.Mode.names()[params.mode - 1];
+    this.simplifyKeySignature();
     this.modeNum = params.mode;
-    this.mode = this.getModeString(this.modeNum);
+
+    // array of notes, e.g. ["C", "D", "E", "F", "G", "A", "B"]
+    this.notesInScale = Tonal.Mode.notes(this.mode, this.tonic);
+    this.notesInScalePitched = Tonal.Mode.notes(this.mode, `${this.tonic}3`);
+    console.log(
+      `Notes in scale: ${this.notesInScale.join(', ')} (pitched: ${this.notesInScalePitched.join(', ')})`
+    );
+    // array of triads, e.g. ["C", "Dm", "Em", "F", "G", "Am", "Bdim"]
+    this.chordsInScale = Tonal.Mode.triads(this.mode, this.tonic);
+
     this.energy = params.energy;
     this.valence = params.valence;
+    this.chords = params.chords;
     this.swing = params.swing;
-    this.bpm = params.bpm;
-    this.title = params.title || "Untitled";
-    this.preset = DEFAULT_PRESET;
-    
-    // Process chords and melodies
-    this.chords = params.chords.map(chordNum => new Chord(this.processChord(chordNum)));
+    this.preset = Presets.selectPreset(this.valence, this.energy);
+
+    // swing with probability 1/10
+    const swing = randomFromInterval(1, 10, this.swing) <= 1;
+    console.log("Chords:", this.chords);
+    this.chordsTonal = this.chords.map((c, chordNo) => {
+      const chordIndex = this.chords[chordNo] - 1;
+      const chordString = this.chordsInScale[chordIndex];
+      // e.g. Chord.getChord("maj7", "G4")
+      return Tonal.Chord.getChord(
+        Tonal.Chord.get(chordString).aliases[0],
+        `${this.notesInScale[chordIndex]}3`
+      );
+    });
     this.melodies = params.melodies;
-    
-    // Generate scale
-    this.notesInScale = Tonal.Scale.get(`${this.tonic} ${this.mode}`).notes;
-  }
 
-  private getModeString(modeNum: number): string {
-    const modes = ['', 'ionian', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'aeolian', 'locrian'];
-    return modes[modeNum] || 'ionian';
-  }
+    this.introLength = this.produceIntro();
+    this.mainLength = this.produceMain();
+    this.outroLength = this.produceOutro();
 
-  private processChord(chordNum: number): any {
-    // Convert chord number to actual chord
-    const scaleDegree = chordNum % 7;
-    const chordRoot = this.notesInScale[scaleDegree];
-    const chordName = `${chordRoot}m`; // Simple minor chord for lofi
-    return Tonal.Chord.get(chordName);
-  }
+    this.numMeasures = this.introLength + this.mainLength + this.outroLength;
+    this.produceFx();
 
-  produce(): Track {
-    const trackLength = this.preset.trackLength;
-    const samples = this.generateSamples();
-    const instruments = this.generateInstruments();
-    const sampleLoops = this.generateSampleLoops(samples, trackLength);
-    const instrumentNotes = this.generateInstrumentNotes(instruments, trackLength);
-    const color = randomColor(this.keyNum + this.modeNum);
-
-    return new Track(
-      this.title,
-      this.bpm,
-      trackLength,
-      samples,
-      instruments,
-      sampleLoops,
-      instrumentNotes,
-      color
+    // drumbeat
+    const [drumbeatGroup, drumbeatIndex] = selectDrumbeat(this.bpm, this.energy);
+    this.drumbeatTimings.sort(
+      ([_, time], [__, time2]) => Tone.Time(time).toSeconds() - Tone.Time(time2).toSeconds()
     );
-  }
-
-  private generateSamples(): Map<string, number> {
-    const samples = new Map<string, number>();
-    
-    // Always include a drum loop
-    const drumbeat = selectDrumbeat(this.bpm);
-    samples.set(drumbeat, 0);
-    
-    // Add other samples based on energy and valence
-    Array.from(this.preset.sampleProbabilities).forEach(([sampleName, probability]) => {
-      const adjustedProbability = probability * (this.energy * 0.5 + this.valence * 0.5);
-      if (Math.random() < adjustedProbability) {
-        const sampleGroup = SAMPLEGROUPS.get(sampleName);
-        if (sampleGroup) {
-          const sampleIndex = sampleGroup.getRandomSample(this.keyNum + this.modeNum);
-          samples.set(sampleName, sampleIndex);
+    let currentStartTime: Time = null;
+    this.drumbeatTimings.forEach(([isStart, time]) => {
+      if (isStart) {
+        if (!currentStartTime) {
+          currentStartTime = time;
         }
+      } else if (currentStartTime) {
+        this.addSample(drumbeatGroup, drumbeatIndex, `${currentStartTime}:0`, `${time}:0`);
+        currentStartTime = null;
       }
     });
 
-    return samples;
+    const title = params.title || `Lofi track in ${this.tonic} ${this.mode}`;
+    const track = new Track({
+      title,
+      swing,
+      key: this.tonic,
+      keyNum: this.keyNum,
+      mode: this.mode,
+      modeNum: this.modeNum,
+      numMeasures: this.numMeasures,
+      bpm: this.bpm,
+      samples: this.samples,
+      sampleLoops: this.sampleLoops,
+      instruments: this.instruments,
+      instrumentNotes: this.instrumentNotes,
+      color: randomColor(this.energy + this.valence),
+      outputParams: params
+    });
+    return track;
   }
 
-  private generateInstruments(): Set<Instrument> {
-    const instruments = new Set<Instrument>();
-    
-    Array.from(this.preset.instrumentProbabilities).forEach(([instrument, probability]) => {
-      const adjustedProbability = probability * (this.energy * 0.7 + 0.3);
-      if (Math.random() < adjustedProbability) {
-        instruments.add(instrument);
-      }
-    });
+  /** Produces the track's intro and returns the number of measures */
+  produceIntro(): number {
+    // TODO: produce a more interesting intro
 
-    // Ensure at least one instrument
-    if (instruments.size === 0) {
-      instruments.add(Instrument.Piano);
+    // measure of silence
+    return 1;
+  }
+
+  /** Produces the track's main part and returns the number of measures */
+  produceMain(): number {
+    const numberOfIterations = Math.ceil(24 / this.chords.length);
+    const length = this.chords.length * numberOfIterations;
+
+    // the measure where the main part starts
+    const measureStart = this.introLength;
+
+    // number of bars at the beginning and end without a drumbeat
+    const drumbeatPadding = this.chords.length > 8 ? 2 : 1;
+
+    for (let i = 0; i < numberOfIterations; i += 1) {
+      const iterationMeasure = measureStart + i * this.chords.length;
+      this.startDrumbeat(`${i === 0 ? iterationMeasure + drumbeatPadding : iterationMeasure}:0`);
+      this.endDrumbeat(`${measureStart + (i + 1) * this.chords.length - drumbeatPadding}:0`);
+
+      this.produceIteration(iterationMeasure);
     }
 
-    return instruments;
+    return length;
   }
 
-  private generateSampleLoops(samples: Map<string, number>, trackLength: number): SampleLoop[] {
-    const sampleLoops: SampleLoop[] = [];
-    
-    Array.from(samples).forEach(([sampleGroupName, sampleIndex]) => {
-      // Most samples loop for the entire track
-      sampleLoops.push(new SampleLoop(
-        sampleGroupName,
-        sampleIndex,
-        "0" as Time,
-        `${trackLength}` as Time
-      ));
-    });
+  /** Produces the track's outro and returns the number of measures */
+  produceOutro(): number {
+    // the measure where the outro part starts
+    const measureStart = this.introLength + this.mainLength;
 
-    return sampleLoops;
+    // play first two chords (for fade out)
+    const measures = this.produceIteration(measureStart, 2);
+    this.outroLength = measuresToSeconds(measures, this.bpm) * 2;
+
+    // add an empty measure of silence at the end
+    const length = measures + 1;
+
+    return length;
   }
 
-  private generateInstrumentNotes(instruments: Set<Instrument>, trackLength: number): InstrumentNote[] {
-    const notes: InstrumentNote[] = [];
-    const measuresPerChord = 4;
-    const beatsPerMeasure = 4;
-    const totalMeasures = Math.floor((trackLength * this.bpm) / (60 * beatsPerMeasure));
-    
-    // Generate chord progression
-    for (let measure = 0; measure < totalMeasures; measure += measuresPerChord) {
-      const chordIndex = Math.floor(measure / measuresPerChord) % this.chords.length;
-      const chord = this.chords[chordIndex];
-      const startTime = (measure * beatsPerMeasure * 60) / this.bpm;
-      
-      Array.from(instruments).forEach(instrument => {
-        // Generate notes based on instrument type
-        if (instrument === Instrument.BassGuitar) {
-          // Bass plays root notes
-          const bassNote = chord.root + '2';
-          for (let beat = 0; beat < measuresPerChord * beatsPerMeasure; beat += 2) {
-            const noteTime = startTime + (beat * 60) / this.bpm;
-            notes.push(new InstrumentNote(
-              instrument,
-              bassNote,
-              "2n" as Time,
-              `${noteTime}` as Time,
-              0.8
-            ));
-          }
-        } else {
-          // Melody instruments play chord tones and melodies
-          const melodyIndex = Math.floor(measure / measuresPerChord) % this.melodies.length;
-          const melody = this.melodies[melodyIndex];
-          
-          melody.forEach((noteNum, index) => {
-            if (noteNum >= 0) {
-              const scaleDegree = noteNum % 7;
-              const octave = Math.floor(noteNum / 7);
-              const pitch = this.notesInScale[scaleDegree] + (octave + 4);
-              const noteTime = startTime + (index * 60) / (this.bpm * 2); // Eighth notes
-              
-              notes.push(new InstrumentNote(
-                instrument,
-                pitch,
-                "8n" as Time,
-                `${noteTime}` as Time,
-                randomFromInterval(6, 10) / 10
-              ));
-            }
+  /** Produces FX for the whole track */
+  produceFx() {
+    if (this.valence < 0.5 && this.modeNum === 6) {
+      // add rain
+      const randomRain = SAMPLEGROUPS.get('rain').getRandomSample(this.valence);
+      // end half a measure before the end
+      this.addSample('rain', randomRain, '0:0', `${this.numMeasures - 0.5}:0`);
+    } else {
+      // add vinyl crackle
+      const randomVinyl = SAMPLEGROUPS.get('vinyl').getRandomSample(this.valence + this.energy);
+      // end half a measure before the end
+      this.addSample('vinyl', randomVinyl, '0:0', `${this.numMeasures - 0.5}:0`);
+    }
+  }
+
+  /** Produces a single iteration of the chord progression; can be cut off prematurely */
+  produceIteration(iterationMeasure: number, cutoff?: number) {
+    let noDrumBeatCurrently = false;
+    const chords = cutoff ? this.chords.slice(0, cutoff) : this.chords;
+    chords.forEach((scaleDegree, chordNo) => {
+      const chord = this.chordsTonal[chordNo];
+      const measure = iterationMeasure + chordNo;
+
+      if (chord.empty) {
+        this.endDrumbeat(`${measure}:3`);
+        noDrumBeatCurrently = true;
+      } else {
+        if (noDrumBeatCurrently) {
+          this.startDrumbeat(`${measure}:0`);
+          noDrumBeatCurrently = false;
+        }
+        // bass line: on the first beat of every measure
+        if (this.preset.bassLine) {
+          const rootNote = `${this.notesInScale[scaleDegree - 1]}${
+            1 + this.preset.bassLine.octaveShift
+          }`;
+          // get a random bass pattern
+          const bassPatternNo = randomFromInterval(
+            0,
+            Presets.BassPatterns.length - 1,
+            this.energy + this.valence + iterationMeasure + chordNo
+          );
+          const bassPattern = Presets.BassPatterns[bassPatternNo];
+          bassPattern.forEach(([startBeat, duration]) => {
+            this.addNote(
+              this.preset.bassLine.instrument,
+              rootNote,
+              `0:${duration}`,
+              `${measure}:${startBeat}`,
+              this.preset.bassLine.volume
+            );
           });
         }
-      });
-    }
 
-    return notes;
+        // harmony
+        if (this.preset.harmony) {
+          const harmonyNotes = octShiftAll(chord.notes, this.preset.harmony.octaveShift);
+          // invert chord
+          harmonyNotes[0] = octShift(harmonyNotes[0], 1);
+          this.addNote(
+            this.preset.harmony.instrument,
+            harmonyNotes,
+            '1m',
+            `${measure}:0`,
+            this.preset.harmony.volume
+          );
+        }
+
+        // first beat arpeggio
+        if (this.preset.firstBeatArpeggio) {
+          const arpeggioNotes = octShiftAll(
+            mountNotesOnScale(
+              scaleDegree,
+              this.preset.firstBeatArpeggioPattern,
+              this.notesInScalePitched
+            ),
+            this.preset.firstBeatArpeggio.octaveShift
+          );
+          this.addArpeggio(
+            this.preset.firstBeatArpeggio.instrument,
+            arpeggioNotes,
+            '0:4',
+            '8n',
+            `${measure}:0`,
+            this.preset.firstBeatArpeggio.volume
+          );
+        }
+      }
+
+      // this should not happen
+      if (this.melodies.length === 0 || !this.preset.melody) {
+        return;
+      }
+      // reduce into array of [note, length, i]
+      const notes = this.melodies[chordNo].reduce(
+        ([arr, top], curr, i) => {
+          if (top.length === 0) {
+            return [arr, [curr, 1, i]];
+          }
+          if (top[0] === curr) {
+            return [arr, [curr, top[1] + 1, top[2]]];
+          }
+          return [
+            [...arr, top],
+            [curr, 1, i]
+          ];
+        },
+        [[], []]
+      );
+      const notesReduced = [...notes[0], notes[1]];
+      notesReduced.forEach(([note, length, i]) => {
+        const [scaleDegreeIndex, octave] = mapNote(note);
+
+        if (scaleDegreeIndex >= 0) {
+          const n = octShift(
+            this.notesInScalePitched[scaleDegreeIndex],
+            octave + this.preset.melody.octaveShift
+          );
+          const melody = this.preset.melodyOctaves ? [octShift(n, -1), n] : n;
+          this.addNote(
+            this.preset.melody.instrument,
+            melody,
+            null,
+            `${measure}:0:${i * 2}`,
+            this.preset.melody.volume
+          );
+        }
+      });
+    });
+
+    return chords.length;
+  }
+
+  /** Simplifies key signature, e.g. Db major instead of C# major */
+  simplifyKeySignature() {
+    if (this.mode === 'ionian') {
+      this.mode = 'major';
+      const enharmonic = Tonal.Note.enharmonic(this.tonic);
+      const enharmonicKey = Tonal.Key.majorKey(enharmonic);
+      if (Tonal.Key.majorKey(this.tonic).keySignature.length >= enharmonicKey.keySignature.length) {
+        this.tonic = enharmonic;
+      }
+    }
+    if (this.mode === 'aeolian') {
+      this.mode = 'minor';
+      const enharmonic = Tonal.Note.enharmonic(this.tonic);
+      const enharmonicKey = Tonal.Key.majorKey(enharmonic);
+      if (Tonal.Key.minorKey(this.tonic).keySignature.length >= enharmonicKey.keySignature.length) {
+        this.tonic = enharmonic;
+      }
+    }
+  }
+
+  /** Starts the drumbeat at the given time */
+  startDrumbeat(time: Time) {
+    this.drumbeatTimings.push([true, time]);
+  }
+
+  /** Stops the drumbeat at the given time */
+  endDrumbeat(time: Time) {
+    this.drumbeatTimings.push([false, time]);
+  }
+
+  /** Adds a given sample to the track */
+  addSample(sample: string, sampleIndex: number, startTime: Time, stopTime: Time) {
+    if (!this.samples.some(([s, i]) => s === sample && i === sampleIndex)) {
+      this.samples.push([sample, sampleIndex]);
+    }
+    this.sampleLoops.push(new SampleLoop(sample, sampleIndex, startTime, stopTime));
+  }
+
+  /** Adds a given instrument note to the track */
+  addNote(
+    instrument: Instrument,
+    pitch: string | string[],
+    duration: Time,
+    time: Time,
+    velocity?: number
+  ) {
+    if (!this.instruments.some((i) => i === instrument)) {
+      this.instruments.push(instrument);
+    }
+    this.instrumentNotes.push(new InstrumentNote(instrument, pitch, duration, time, velocity));
+  }
+
+  /** Adds a rolling arpeggio to the note list */
+  addArpeggio(
+    instrument: Instrument,
+    notes: string[],
+    totalDuration: Time,
+    singleNoteUnit: string,
+    startTime: Time,
+    velocity?: number
+  ) {
+    notes.forEach((note, i) => {
+      const noteDuration = {} as any;
+      noteDuration[singleNoteUnit] = i;
+      this.addNote(
+        instrument,
+        note,
+        subtractTime(totalDuration, noteDuration),
+        addTime(startTime, noteDuration),
+        velocity
+      );
+    });
   }
 }
 
-export { Producer };
