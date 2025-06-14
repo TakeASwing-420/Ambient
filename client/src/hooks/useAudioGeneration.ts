@@ -7,6 +7,7 @@ export interface AudioGenerationState {
   progress: number;
   error: string | null;
   audioBlob: Blob | null;
+  combinedBlob: Blob | null;
 }
 
 export const useAudioGeneration = () => {
@@ -14,15 +15,17 @@ export const useAudioGeneration = () => {
     isGenerating: false,
     progress: 0,
     error: null,
-    audioBlob: null
+    audioBlob: null,
+    combinedBlob: null
   });
 
-  const generateAudio = useCallback(async (params: OutputParams) => {
+  const generateAudio = useCallback(async (params: OutputParams, videoFile: File) => {
     setState({
       isGenerating: true,
       progress: 0,
       error: null,
-      audioBlob: null
+      audioBlob: null,
+      combinedBlob: null
     });
 
     try {
@@ -30,24 +33,27 @@ export const useAudioGeneration = () => {
       setState(prev => ({ ...prev, progress: 25 }));
       
       const audioBlob = await AudioGenerator.generateAudio(params);
-      
+      const combinedBlob = await AudioGenerator.combineVideoWithAudio(videoFile, audioBlob);
+
       setState(prev => ({ ...prev, progress: 100 }));
       
       setState({
         isGenerating: false,
         progress: 100,
         error: null,
-        audioBlob
+        audioBlob,
+        combinedBlob
       });
 
-      return audioBlob;
+      return [audioBlob, combinedBlob];
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Audio generation failed';
       setState({
         isGenerating: false,
         progress: 0,
         error: errorMessage,
-        audioBlob: null
+        audioBlob: null,
+        combinedBlob: null
       });
       throw error;
     }
@@ -64,7 +70,8 @@ export const useAudioGeneration = () => {
       isGenerating: false,
       progress: 0,
       error: null,
-      audioBlob: null
+      audioBlob: null,
+      combinedBlob: null
     });
   }, []);
 

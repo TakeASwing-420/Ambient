@@ -20,6 +20,7 @@ const WorkflowContainer: FC = () => {
   const [params_res, setResult] = useState<OutputParams | null>(null);
   const { processVideo, isProcessing, result, error, reset } =
     useVideoProcessing();
+  console.log("Result for Video inspection:", result);
   const {
     generateAudio,
     isGenerating,
@@ -27,6 +28,7 @@ const WorkflowContainer: FC = () => {
     error: audioError,
     downloadAudio,
     reset: resetAudio,
+    combinedBlob,
   } = useAudioGeneration();
 
   const handleFileUpload = async (file: File) => {
@@ -83,9 +85,9 @@ const WorkflowContainer: FC = () => {
   function handleDownloadVideo(
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>
   ): void {
-    if (!result?.videoPath) return;
+    if (!combinedBlob) return;
     const link = document.createElement("a");
-    link.href = result.videoPath;
+    link.href = URL.createObjectURL(combinedBlob);
     link.download = videoFile?.name
       ? videoFile.name.replace(/\.[^/.]+$/, "") + "_lofi.mp4"
       : "lofi_video.mp4";
@@ -216,22 +218,26 @@ const WorkflowContainer: FC = () => {
       {/* Step 3: Results */}
       {currentStep === 3 && params_res && (
         <div className="p-6">
-          <h3 className="font-poppins font-semibold text-xl mb-4">
-            Your LoFi Video is Ready!
-          </h3>
+          {combinedBlob && (
+            <h3 className="font-poppins font-semibold text-xl mb-4">
+              Your LoFi Video is Ready!
+            </h3>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div>
-              <h4 className="font-medium text-gray-900 mb-3">
-                Processed Video
-              </h4>
-              <video
-                src={result.videoPath}
-                controls
-                className="w-full rounded-lg shadow-sm"
-                style={{ maxHeight: "300px" }}
-              />
-            </div>
+            {combinedBlob && (
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3">
+                  Processed Video
+                </h4>
+                <video
+                  src={URL.createObjectURL(combinedBlob)}
+                  controls
+                  className="w-full rounded-lg shadow-sm"
+                  style={{ maxHeight: "300px" }}
+                />
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <h4 className="font-medium text-gray-900 mb-3">
@@ -260,7 +266,7 @@ const WorkflowContainer: FC = () => {
 
                 <div className="flex gap-3">
                   <Button
-                    onClick={() => generateAudio(params_res)}
+                    onClick={() => generateAudio(params_res, videoFile.file)}
                     disabled={isGenerating}
                     className="flex-1"
                   >
@@ -291,12 +297,12 @@ const WorkflowContainer: FC = () => {
             <Button variant="outline" onClick={handleStartOver}>
               Create Another
             </Button>
-            <Button
+            {combinedBlob && <Button
               onClick={handleDownloadVideo}
               className="bg-primary hover:bg-primary/90"
             >
               Download Video
-            </Button>
+            </Button>}
           </div>
         </div>
       )}

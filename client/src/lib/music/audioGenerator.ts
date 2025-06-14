@@ -34,17 +34,36 @@ export class AudioGenerator {
   /**
    * Combine video with generated audio (browser-based)
    */
+
   static async combineVideoWithAudio(videoFile: File, audioBlob: Blob): Promise<Blob> {
-    // For now, we'll just return the audio blob
-    // In a full implementation, you'd use libraries like FFmpeg.js for browser-based video processing
-    console.log('Video-audio combination would happen here');
-    return audioBlob;
+    return new Promise((resolve, reject) => {
+      const worker = new Worker(new URL('@/workers/combineVideoWorker.ts', import.meta.url), { type: 'module' });
+      worker.onmessage = (e) => {
+        const { success, data, error } = e.data;
+        if (success) {
+          const resultBlob = new Blob([data], { type: 'video/mp4' });
+          resolve(resultBlob);
+        } else {
+          reject(new Error('Failed to combine video with audio: ' + error));
+        }
+        worker.terminate();
+      };
+      worker.onerror = (err) => {
+        reject(new Error('Worker error: ' + err.message));
+        worker.terminate();
+      };
+      Promise.all([videoFile.arrayBuffer(), audioBlob.arrayBuffer()])
+        .then(([videoBuffer, audioBuffer]) => {
+          worker.postMessage({ videoBuffer, audioBuffer });
+        })
+        .catch(reject);
+    });
   }
 
   /**
    * Download audio as file
    */
-  static downloadAudio(audioBlob: Blob, filename: string = 'lofi-track.wav') {
+  static downloadAudio(audioBlob: Blob, filename: string = 'lofi-track.webm') {
     const url = URL.createObjectURL(audioBlob);
     const a = document.createElement('a');
     a.href = url;
