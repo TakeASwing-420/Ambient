@@ -22,6 +22,10 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body.dark-mode {
   background: #0f0f1a;
   color: #f0f0f0;

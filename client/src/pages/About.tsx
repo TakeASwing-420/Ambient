@@ -98,7 +98,7 @@ const About: FC = () => {
           </div>
         </section>
 
-        <section className="pb-12 flex justify-center items-center h-fit flex-col">
+        <section className="pb-12 flex justify-center items-center h-fit flex-col" id="team">
           <h2 className="font-poppins font-bold text-2xl md:text-4xl text-center mb-12">
             Meet team <span className="purpleTitle">Rebase</span>
           </h2>
@@ -117,7 +117,7 @@ const About: FC = () => {
 
                 <div className="flex gap-2 mt-2 text-2xl">
                   <a href="https://www.linkedin.com/in/deep-mondal-268a93242/" target="_blank"><FaLinkedin className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
-                  <a href="" target="_blank"><FaGithubSquare className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
+                  <a href="https://github.com/TakeASwing-420" target="_blank"><FaGithubSquare className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
                   <a href="" target="_blank"><FaInstagramSquare className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
                 </div>
               </div>
@@ -136,8 +136,8 @@ const About: FC = () => {
 
                 <div className="flex gap-2 mt-2 text-2xl">
                   <a href="https://www.linkedin.com/in/arpan-mandal-74a0672a2/" target="_blank"><FaLinkedin className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
-                  <a href="" target="_blank"><FaGithubSquare className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
-                  <a href="" target="_blank"><FaInstagramSquare className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
+                  <a href="https://github.com/EnthusiastiCoder" target="_blank"><FaGithubSquare className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
+                  <a href="https://www.instagram.com/arpanmandal499/" target="_blank"><FaInstagramSquare className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
                 </div>
               </div>
             </div>
@@ -176,8 +176,8 @@ const About: FC = () => {
 
                 <div className="flex gap-2 mt-2 text-2xl">
                   <a href="https://www.linkedin.com/in/arup-matabber/" target="_blank"><FaLinkedin className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
-                  <a href="" target="_blank"><FaGithubSquare className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
-                  <a href="" target="_blank"><FaInstagramSquare className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
+                  <a href="https://github.com/arup-matabber" target="_blank"><FaGithubSquare className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
+                  <a href="https://www.instagram.com/_arup.18_/" target="_blank"><FaInstagramSquare className="opacity-60 hover:opacity-100 hover:text-purple-700 transition-all duration-200 ease-in-out"/></a>
                 </div>
               </div>
             </div>

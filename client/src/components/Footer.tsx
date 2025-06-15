@@ -1,4 +1,5 @@
 import { FC } from 'react';
+import { Link } from "wouter";
 
 const Footer: FC = () => {
   return (
@@ -33,7 +34,8 @@ const Footer: FC = () => {
             &copy; {new Date().getFullYear()} Lofify. All rights reserved.
           </p>
 
-          <p className='subText'>Made with <span className='purpleTitle'>♥</span> by <span className='text-purple-400 hover:text-purple-500 cursor-pointer'>Team Rebase</span></p>
+          {/* <p className='subText'>Made with <span className='purpleTitle'>♥</span> by <span className='text-purple-400 hover:text-purple-500 cursor-pointer'><Link href="/About#team">Team Rebase</Link></span></p> */}
+          <p className='subText'>Made with <span className='purpleTitle'>♥</span> by <span className='text-purple-400 hover:text-purple-500 cursor-pointer'><a href="/About#team">Team Rebase</a></span></p>
 
           <div className="flex justify-center md:justify-end space-x-6 mt-4 md:mt-0">
             <a href="#" className="text-gray-400 hover:text-purple-600 text-sm">Privacy Policy</a>
