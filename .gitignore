@@ -4,4 +4,12 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+<<<<<<< HEAD
 temp
+=======
+attached_assets/
+.venv/
+temp/
+__pycache__/
+model/__pycache__/
+>>>>>>> 158a54c3ca53790538cfcac3cc2bca89ecb6661b
