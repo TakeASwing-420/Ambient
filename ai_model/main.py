@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from pathlib import Path
 import tempfile
 import os
 import torch
@@ -13,13 +14,14 @@ app = Flask(__name__)
 limiter = Limiter(app=app, key_func=get_remote_address, default_limits=["30 per minute"])
 
 # Load model once
-checkpoint = "E:\\Lofify\\ai_model\\checkpoints\\lofi2lofi_decoder.pth"
+checkpoint_path = Path(__file__).parent / "checkpoints" / "lofi2lofi_decoder.pth"
+
 print("Loading lofi model...", end=" ")
 model = Lofi2LofiDecoder(device=device)
-model.load_state_dict(torch.load(checkpoint, map_location=device))
+model.load_state_dict(torch.load(checkpoint_path, map_location=device))
 model.to(device)
 model.eval()
-print(f"Loaded {checkpoint}.")
+print(f"Loaded {checkpoint_path}.")
 
 
 @app.route('/')
