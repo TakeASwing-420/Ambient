@@ -4,6 +4,9 @@ import numpy as np
 from transformers import CLIPProcessor, CLIPModel
 from sklearn.metrics.pairwise import cosine_similarity
 import os
+import random
+from collections import Counter
+import statistics
 
 # Load CLIP
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -102,9 +105,51 @@ def predict_music_features(video_path):
 
 # Example usage
 if __name__ == "__main__":
-    video_path = os.path.join(os.path.dirname(__file__), "7232007-uhd_2160_3840_25fps.mp4")
-    try:
-        features = predict_music_features(video_path)
-        print(features)
-    except Exception as e:
-        print(f"[FATAL] {str(e)}")
+    dataset_dir = os.path.join(os.path.dirname(__file__), "lofi_dataset")
+    video_files = [f for f in os.listdir(dataset_dir) if f.endswith(".mp4")]
+    random.shuffle(video_files)
+    split_idx = int(0.8 * len(video_files))
+    train_videos = video_files[:split_idx]
+    test_videos = video_files[split_idx:]
+
+    print(f"Total videos: {len(video_files)} | Train: {len(train_videos)} | Test: {len(test_videos)}")
+
+    # TRAINING: Collect mood tags
+    train_moods = []
+    for vid in train_videos:
+        path = os.path.join(dataset_dir, vid)
+        try:
+            features = predict_music_features(path)
+            train_moods.append(features["mood_tag"])
+            print(f"[TRAIN] {vid}: {features['mood_tag']}")
+        except Exception as e:
+            print(f"[TRAIN ERROR] {vid}: {e}")
+
+    # Top 11 mood labels
+    mood_counter = Counter(train_moods)
+    top_11 = [m for m, _ in mood_counter.most_common(11)]
+    print(f"\nTop 11 mood labels: {top_11}\n")
+
+    # TESTING: Check if mood_tag in top 11
+    test_moods = []
+    test_matches = 0
+    for vid in test_videos:
+        path = os.path.join(dataset_dir, vid)
+        try:
+            features = predict_music_features(path)
+            mood = features["mood_tag"]
+            test_moods.append(mood)
+            match = mood in top_11
+            test_matches += int(match)
+            print(f"[TEST] {vid}: {mood} | Match: {match}")
+        except Exception as e:
+            print(f"[TEST ERROR] {vid}: {e}")
+
+    # Accuracy and stats
+    accuracy = 100 * test_matches / len(test_videos) if test_videos else 0
+    test_counts = Counter(test_moods)
+    test_freqs = [test_counts[m] for m in top_11]
+    stddev = statistics.stdev(test_freqs) if len(test_freqs) > 1 else 0
+    print(f"\nTest accuracy (mood_tag in top 11): {accuracy:.2f}%")
+    print(f"Standard deviation of top 11 mood label counts in test set: {stddev:.2f}")
+    print(f"Test mood label counts for top 11: {dict(zip(top_11, test_freqs))}")

@@ -5,7 +5,7 @@ from typing import Optional
 from model.lofi2lofi_model import Decoder as Lofi2LofiDecoder
 from model.constants import HIDDEN_SIZE
 
-checkers = ["chill and lofi", "bright and happy", "calm and ambient", "uplifting and hopeful", "nostalgic and sentimental", "playful and fun", "romantic and emotional", "peaceful and serene", "melancholic and reflective", "energetic and upbeat", "adventurous and exploratory"]
+checkers = ["chill and lofi", "uplifting and hopeful", "bright and happy", "calm and ambient", "mysterious and cinematic", "fast-paced and energetic", "adventurous and exploratory", "romantic and emotional", "peaceful and serene", "melancholic and reflective", "energetic and upbeat", "epic and climatic"]
 
 def decode(model: Lofi2LofiDecoder, video_path: str) -> Optional[str]:
     mu = torch.randn(1, HIDDEN_SIZE)
@@ -19,7 +19,9 @@ def decode(model: Lofi2LofiDecoder, video_path: str) -> Optional[str]:
         json = output.to_json()
         return json
     elif lofify.get("mood_tag"):
+        print(lofify)
         return None
     else:
+        print(lofify)
         return "mood_tag not present"
 

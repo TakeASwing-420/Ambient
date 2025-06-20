@@ -12,11 +12,11 @@ self.onmessage = async (e) => {
       wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
     });
     await ffmpeg.writeFile('input.mp4', new Uint8Array(videoBuffer));
-    await ffmpeg.writeFile('audio.webm', new Uint8Array(audioBuffer));
+    await ffmpeg.writeFile('audio.wav', new Uint8Array(audioBuffer));
 	
     await ffmpeg.exec([
   '-i', 'input.mp4',
-  '-i', 'audio.webm',
+  '-i', 'audio.wav',
   '-c:v', 'copy',
   '-c:a', 'aac',
   '-b:a', '192k',
