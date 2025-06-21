@@ -5,21 +5,20 @@ from typing import Optional
 from model.lofi2lofi_model import Decoder as Lofi2LofiDecoder
 from model.constants import HIDDEN_SIZE
 
-checkers = ["chill and lofi", "bright and happy", "calm and ambient", "uplifting and hopeful", "nostalgic and sentimental", "playful and fun", "romantic and emotional", "peaceful and serene", "melancholic and reflective", "energetic and upbeat", "adventurous and exploratory"]
-
 def decode(model: Lofi2LofiDecoder, video_path: str) -> Optional[str]:
     mu = torch.randn(1, HIDDEN_SIZE)
 
     lofify = predict_music_features(video_path)
-    is_lofifiable = any(lofify["mood_tag"]==x for x in checkers)
+    try:
+        is_lofifiable = lofify["is_lofifiable"]
 
-    if is_lofifiable:
-        hash, (pred_chords, pred_notes, _, pred_key, pred_mode, _, _) = model.decode(mu)
-        output = Output(hash, pred_chords, pred_notes, lofify["tempo"], pred_key, pred_mode, lofify["valence"], lofify["energy"],lofify["swing"])
-        json = output.to_json()
-        return json
-    elif lofify.get("mood_tag"):
-        return None
-    else:
-        return "mood_tag not present"
-
+        if is_lofifiable:
+            hash, (pred_chords, pred_notes, _, pred_key, pred_mode, _, _) = model.decode(mu)
+            output = Output(hash, pred_chords, pred_notes, lofify["tempo"], pred_key, pred_mode, lofify["valence"], lofify["energy"],lofify["swing"])
+            json = output.to_json()
+            return json
+        else:
+            return None
+    except Exception as e:
+        print(f"Error occurred: {e}")
+        return 'Lofifiable_tag not found.'

@@ -60,8 +60,6 @@ export class Producer {
 
   numMeasures: number;
 
-  introLength: number;
-
   mainLength: number;
 
   outroLength: number;
@@ -125,11 +123,12 @@ export class Producer {
     });
     this.melodies = params.melodies;
 
-    this.introLength = this.produceIntro();
-    this.mainLength = this.produceMain();
-    this.outroLength = this.produceOutro();
+    // No intro: set introLength to 0
+    const introLength = 0;
+    this.mainLength = this.produceMain(introLength);
+    this.outroLength = this.produceOutro(introLength, this.mainLength);
 
-    this.numMeasures = this.introLength + this.mainLength + this.outroLength;
+    this.numMeasures = introLength + this.mainLength + this.outroLength;
     this.produceFx();
 
     // drumbeat
@@ -169,21 +168,13 @@ export class Producer {
     return track;
   }
 
-  /** Produces the track's intro and returns the number of measures */
-  produceIntro(): number {
-    // TODO: produce a more interesting intro
-
-    // measure of silence
-    return 1;
-  }
-
   /** Produces the track's main part and returns the number of measures */
-  produceMain(): number {
+  produceMain(introLength: number = 1): number {
     const numberOfIterations = Math.ceil(24 / this.chords.length);
     const length = this.chords.length * numberOfIterations;
 
     // the measure where the main part starts
-    const measureStart = this.introLength;
+    const measureStart = introLength;
 
     // number of bars at the beginning and end without a drumbeat
     const drumbeatPadding = this.chords.length > 8 ? 2 : 1;
@@ -200,9 +191,9 @@ export class Producer {
   }
 
   /** Produces the track's outro and returns the number of measures */
-  produceOutro(): number {
+  produceOutro(introLength: number = 1, mainLength: number = 0): number {
     // the measure where the outro part starts
-    const measureStart = this.introLength + this.mainLength;
+    const measureStart = introLength + mainLength;
 
     // play first two chords (for fade out)
     const measures = this.produceIteration(measureStart, 2);

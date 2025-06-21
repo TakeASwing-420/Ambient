@@ -262,7 +262,7 @@ const WorkflowContainer: FC = () => {
               {/* Audio Generation Controls */}
               <div className="bg-gray-50 p-4 rounded-lg card2">
                 <h4 className="font-medium mb-3">
-                  Generate Lofi Audio
+                  Generate Lofi Video
                 </h4>
 
                 <div className="flex gap-3">
@@ -271,7 +271,7 @@ const WorkflowContainer: FC = () => {
                     disabled={isGenerating}
                     className="flex-1 darkBtn"
                   >
-                    {isGenerating ? "Generating Audio..." : "Generate Audio"}
+                    {isGenerating ? "Generating Audio..." : "Generate Video"}
                   </Button>
 
                   {audioBlob && (
