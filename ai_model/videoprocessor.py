@@ -1,31 +1,28 @@
+from pathlib import Path
 import cv2
 import torch
 import numpy as np
 from transformers import CLIPProcessor, CLIPModel
 from sklearn.metrics.pairwise import cosine_similarity
+from model.Lofifiable_model import LofiClassifier
+import model
 import os
-import random
-from collections import Counter
-import statistics
 
 # Load CLIP
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
 processor = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+classifier = LofiClassifier(input_dim=512).to(device)  # CLIP image embeddings are 512-dim
+checkpoint_path = Path(__file__).parent / "checkpoints" / "lofi_nn_classifier.pth"
+checkpoint = torch.load(checkpoint_path, map_location=device)  # Update path
+classifier.load_state_dict(checkpoint)
+classifier.eval()
 
 # Define feature label sets
 valence_labels = ["sad", "neutral", "happy"]
 tempo_labels = ["slow tempo", "medium tempo", "fast tempo"]
 energy_labels = ["low energy", "moderate energy", "high energy"]
 swing_labels = ["mechanical rhythm", "slightly swung rhythm", "very swung rhythm"]
-mood_labels = [
-    "chill and lofi", "fast-paced and energetic", "dark and tense", "bright and happy", 
-    "calm and ambient", "uplifting and hopeful", "mysterious and cinematic", "intense and dramatic",
-    "nostalgic and sentimental", "playful and fun", "romantic and emotional", "epic and grand", 
-    "quirky and experimental", "spooky and eerie", "adventurous and exploratory", "peaceful and serene", 
-    "introspective and thoughtful", "joyful and celebratory", "melancholic and reflective", 
-    "energetic and upbeat", "dramatic and powerful", "epic and climatic"
-]
 
 # Frame extraction with checks and logging
 def extract_frames(video_path, num_frames=10):
@@ -68,6 +65,7 @@ def rank_labels(image_embedding, text_labels):
     return similarities
 
 # Main predictor with safety checks
+# Main predictor with safety checks
 def predict_music_features(video_path):
     frames = extract_frames(video_path)
     if len(frames) == 0:
@@ -79,19 +77,22 @@ def predict_music_features(video_path):
 
     image_embedding = image_features.mean(dim=0, keepdim=True)
 
+    # --- Predict Lofi-fiability using the trained classifier ---
+    with torch.no_grad():
+        lofi_score = classifier(image_embedding).item()  # value between 0–1
+    lofifiable:bool = lofi_score > 0.5  # threshold
+
     # Compute similarity-based features
     valence_scores = rank_labels(image_embedding, valence_labels)
     tempo_scores = rank_labels(image_embedding, tempo_labels)
     energy_scores = rank_labels(image_embedding, energy_labels)
     swing_scores = rank_labels(image_embedding, swing_labels)
-    mood_scores = rank_labels(image_embedding, mood_labels)
 
     # Normalize scores to [0, 1]
     valence = np.dot(valence_scores, [0.0, 0.5, 1.0]) / valence_scores.sum()
     tempo_idx = int(np.argmax(tempo_scores))
-    energy = np.dot(energy_scores, [0.0, 0.5, 1.0]) / energy_scores.sum()
-    swing = np.dot(swing_scores, [0.0, 0.5, 1.0]) / swing_scores.sum()
-    mood_tag = mood_labels[int(np.argmax(mood_scores))]
+    energy = np.dot(energy_scores, [1.0, 0.5, 0.0]) / energy_scores.sum()
+    swing = np.dot(swing_scores, [0, 0.5, 1.0]) / swing_scores.sum()
 
     tempo_str = tempo_labels[tempo_idx].replace(" tempo", "")
 
@@ -100,56 +101,7 @@ def predict_music_features(video_path):
         "tempo": tempo_str,
         "energy": round(energy, 3),
         "swing": round(swing, 3),
-        "mood_tag": mood_tag
+        "lofifiable_score": round(lofi_score, 3),
+        "is_lofifiable": lofifiable
     }
 
-# Example usage
-if __name__ == "__main__":
-    dataset_dir = os.path.join(os.path.dirname(__file__), "lofi_dataset")
-    video_files = [f for f in os.listdir(dataset_dir) if f.endswith(".mp4")]
-    random.shuffle(video_files)
-    split_idx = int(0.8 * len(video_files))
-    train_videos = video_files[:split_idx]
-    test_videos = video_files[split_idx:]
-
-    print(f"Total videos: {len(video_files)} | Train: {len(train_videos)} | Test: {len(test_videos)}")
-
-    # TRAINING: Collect mood tags
-    train_moods = []
-    for vid in train_videos:
-        path = os.path.join(dataset_dir, vid)
-        try:
-            features = predict_music_features(path)
-            train_moods.append(features["mood_tag"])
-            print(f"[TRAIN] {vid}: {features['mood_tag']}")
-        except Exception as e:
-            print(f"[TRAIN ERROR] {vid}: {e}")
-
-    # Top 11 mood labels
-    mood_counter = Counter(train_moods)
-    top_11 = [m for m, _ in mood_counter.most_common(11)]
-    print(f"\nTop 11 mood labels: {top_11}\n")
-
-    # TESTING: Check if mood_tag in top 11
-    test_moods = []
-    test_matches = 0
-    for vid in test_videos:
-        path = os.path.join(dataset_dir, vid)
-        try:
-            features = predict_music_features(path)
-            mood = features["mood_tag"]
-            test_moods.append(mood)
-            match = mood in top_11
-            test_matches += int(match)
-            print(f"[TEST] {vid}: {mood} | Match: {match}")
-        except Exception as e:
-            print(f"[TEST ERROR] {vid}: {e}")
-
-    # Accuracy and stats
-    accuracy = 100 * test_matches / len(test_videos) if test_videos else 0
-    test_counts = Counter(test_moods)
-    test_freqs = [test_counts[m] for m in top_11]
-    stddev = statistics.stdev(test_freqs) if len(test_freqs) > 1 else 0
-    print(f"\nTest accuracy (mood_tag in top 11): {accuracy:.2f}%")
-    print(f"Standard deviation of top 11 mood label counts in test set: {stddev:.2f}")
-    print(f"Test mood label counts for top 11: {dict(zip(top_11, test_freqs))}")

@@ -53,7 +53,7 @@ def decode_endpoint():
             response.headers.add('Access-Control-Allow-Origin', '*')
             return response, 422
         elif result == "mood_tag not present":
-            response = jsonify({'error': 'Mood_tag not found.'})
+            response = jsonify({'error': 'Lofifiable_tag not found.'})
             response.headers.add('Access-Control-Allow-Origin', '*')
             return response, 422
 
