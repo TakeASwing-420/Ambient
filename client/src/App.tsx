@@ -9,13 +9,38 @@ import Dashboard from "@/pages/Dashboard";
 import About from "@/pages/About";
 import Signin from "@/pages/Signin";
 import Login from "@/pages/login";
+import { AuthProvider, useAuth } from "./auth/AuthContext.jsx";
+
+const RequireAuth = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) {
+    return <div className="w-screen h-screen flex justify-center items-center">Loading...</div>;
+  }
+  if (!user) {
+    window.location.href = "/login";
+    return null;
+  }
+  return children;
+};
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/convert" component={Convert} />
-      <Route path="/dashboard" component={Dashboard} />
+      <Route path="/convert">
+        <AuthProvider>
+          <RequireAuth>
+            <Convert />
+          </RequireAuth>
+        </AuthProvider>
+      </Route>
+      <Route path="/dashboard">
+        <AuthProvider>
+          <RequireAuth>
+            <Dashboard />
+          </RequireAuth>
+        </AuthProvider>
+      </Route>
       <Route path="/about" component={About} />
       <Route path="/signin" component={Signin} />
       <Route path="/login" component={Login} />

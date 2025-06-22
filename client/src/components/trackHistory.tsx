@@ -5,6 +5,7 @@ import { IoPlayOutline } from "react-icons/io5";
 import { IoMdAdd } from "react-icons/io";
 import { FiDownload } from "react-icons/fi";
 import { RiDeleteBinLine } from "react-icons/ri";
+import { IoShareSocial } from "react-icons/io5";
 
 const TrackHistory: FC = () => {
   useEffect(() => {
@@ -124,6 +125,7 @@ const TrackHistory: FC = () => {
               <IoMdAdd className="text-lg hover:text-purple-600 transition-all duration-200 ease-in-out"/>
               <FiDownload className="text-lg hover:text-purple-600 transition-all duration-200 ease-in-out"/>
               <RiDeleteBinLine className="text-lg hover:text-purple-600 transition-all duration-200 ease-in-out"/>
+              <IoShareSocial className="text-lg hover:text-purple-600 transition-all duration-200 ease-in-out"/>
             </div>
           </div>
         ))}

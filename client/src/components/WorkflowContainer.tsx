@@ -124,9 +124,7 @@ const WorkflowContainer: FC = () => {
             <div className="bg-purple-50 rounded-lg p-4 mb-4 card2">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium">
-                    {videoFile.name}
-                  </h4>
+                  <h4 className="font-medium">{videoFile.name}</h4>
                   <p className="text-sm subText">
                     {videoFile.size} • {videoFile.duration}
                   </p>
@@ -228,9 +226,7 @@ const WorkflowContainer: FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {combinedBlob && (
               <div>
-                <h4 className="font-medium mb-3">
-                  Processed Video
-                </h4>
+                <h4 className="font-medium mb-3">Processed Video</h4>
                 <video
                   src={URL.createObjectURL(combinedBlob)}
                   controls
@@ -241,9 +237,7 @@ const WorkflowContainer: FC = () => {
             )}
             <div className="space-y-4">
               <div>
-                <h4 className="font-medium mb-3">
-                  Music Parameters
-                </h4>
+                <h4 className="font-medium mb-3">Music Parameters</h4>
                 <div className="bg-white p-4 rounded-lg border text-sm card2">
                   <div className="grid grid-cols-2 gap-3">
                     <div>Key: {params_res?.key || "C"}</div>
@@ -261,9 +255,7 @@ const WorkflowContainer: FC = () => {
 
               {/* Audio Generation Controls */}
               <div className="bg-gray-50 p-4 rounded-lg card2">
-                <h4 className="font-medium mb-3">
-                  Generate Lofi Video
-                </h4>
+                <h4 className="font-medium mb-3">Generate Lofi Video</h4>
 
                 <div className="flex gap-3">
                   <Button
@@ -275,7 +267,11 @@ const WorkflowContainer: FC = () => {
                   </Button>
 
                   {audioBlob && (
-                    <Button onClick={() => downloadAudio()} variant="outline" className="lightBtn">
+                    <Button
+                      onClick={() => downloadAudio()}
+                      variant="outline"
+                      className="lightBtn"
+                    >
                       Download Audio
                     </Button>
                   )}
@@ -295,15 +291,21 @@ const WorkflowContainer: FC = () => {
           </div>
 
           <div className="flex justify-between">
-            <Button variant="outline" onClick={handleStartOver} className="lightBtn">
+            <Button
+              variant="outline"
+              onClick={handleStartOver}
+              className="lightBtn"
+            >
               Create Another
             </Button>
-            {combinedBlob && <Button
-              onClick={handleDownloadVideo}
-              className="darkBtn"
-            >
-              Download Video
-            </Button>}
+
+             <Button className="darkBtn">Add to Playlist</Button>
+
+            {combinedBlob && (
+              <Button onClick={handleDownloadVideo} className="darkBtn">
+                Download Video
+              </Button>
+            )}
           </div>
         </div>
       )}
