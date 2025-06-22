@@ -196,6 +196,11 @@ body.dark-mode .authBtn:hover {
   color: #f0f0f0 !important;
 }
 
+.hero {
+  background: url("https://static.vecteezy.com/system/resources/thumbnails/040/983/192/small_2x/ai-generated-an-animated-scene-featuring-a-girl-with-wine-and-a-cat-against-a-nighttime-cityscape-backdrop-lo-fi-style-continuous-loop-free-video.jpg") no-repeat center center/cover;
+  min-height: 85dvh;
+}
+
 .scrolled {
   box-shadow: 1px 1px 10px gray;
 }
