@@ -6,6 +6,7 @@ import { MdOutlineLightMode } from "react-icons/md";
 import { MdOutlineDarkMode } from "react-icons/md";
 import { RiMenu3Fill } from "react-icons/ri";
 import { IoMdClose } from "react-icons/io";
+import { MdKeyboardArrowDown } from "react-icons/md";
 import { account } from "../auth/appwrite";
 
 const Header: FC = () => {
@@ -13,6 +14,7 @@ const Header: FC = () => {
   const [location] = useLocation();
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const [options, setOptions] = useState(false);
 
   useEffect(() => {
     const navbar = document.getElementById("navbar");
@@ -68,9 +70,9 @@ const Header: FC = () => {
   }, []);
 
   const handleLogout = async () => {
-    console.log(user)
-    if(!user) {
-      alert("Not Current User Session!")
+    console.log(user);
+    if (!user) {
+      alert("Not Current User Session!");
       return;
     }
 
@@ -86,14 +88,14 @@ const Header: FC = () => {
 
   return (
     <header
-      className="bg-white fixed top-0 right-0 w-screen z-[100] transition-all ease-in-out"
+      className="bg-purple-200/50 backdrop-blur-md rounded-2xl fixed top-2 right-[4.5dvw] w-[90dvw] z-[100] transition-all ease-in-out"
       id="navbar"
     >
       <div className="max-w-7xl mx-auto px-4 h-fit sm:px-6 lg:px-8 py-3">
         <div className="flex items-center h-fit justify-between">
           <Link href="/">
             <div className="flex items-center cursor-pointer">
-              <div className="md:w-10 md:h-10 w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
+              <div className="md:w-10 md:h-10 w-8 h-8 bg-gradient-to-br from-purple-500 via-indigo-500 to-violet-600 rounded-lg flex items-center justify-center">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="md:h-6 md:w-6 h-4 w-6 text-white"
@@ -147,16 +149,6 @@ const Header: FC = () => {
                   Dashboard
                 </Link>
               </li>
-              <li className="font-normal text-gray-600 cursor-pointer">
-                <Link
-                  href="/about"
-                  className={`${
-                    location === "/about" ? "activeLink" : ""
-                  } navLink transition-colors`}
-                >
-                  About
-                </Link>
-              </li>
             </ul>
 
             <div className="flex justify-center items-center gap-4">
@@ -176,15 +168,64 @@ const Header: FC = () => {
                   <Link href="/signin">Sign in</Link>
                 </button>
               ) : (
-                <button
-                  className="darkBtn md:py-2 py-1 md:px-3 px-2 rounded-lg text-sm"
-                  onClick={handleLogout}
-                >
-                  <p>Logout</p>
-                </button>
+                ""
+                // <button
+                //   className="darkBtn md:py-2 py-1 md:px-3 px-2 rounded-lg text-sm"
+                //   onClick={handleLogout}
+                // >
+                //   <p>Logout</p>
+                // </button>
               )}
 
-              { user && <p className="text-purple-400">Hi {user.name.slice(0, user.name.indexOf(' '))}</p>}
+              {user && (
+                <div
+                  className="ml-1 flex gap-1 justify-center items-center cursor-pointer px-3 py-2 rounded-lg lightBtn relative"
+                  onClick={() => {
+                    setOptions(!options);
+                  }}
+                >
+                  <div className="w-[30px] h-[30px] bg-gray-300 rounded-full flex justify-center items-center">
+                    {user.profile ? (
+                      <img src={user.profile} alt="" />
+                    ) : (
+                      <h1 className="text-black font-bold">{user.name[0]}</h1>
+                    )}
+                  </div>
+                  <p className="mutedText sm:block hidden">
+                    {user.name.slice(0, user.name.indexOf(" "))}
+                  </p>
+
+                  <MdKeyboardArrowDown
+                    className={`${
+                      options ? "rotate-180" : ""
+                    } transition-all duration-200 ease-in-out`}
+                  />
+
+                  <div
+                    className={`absolute w-full min-w-fit top-[3.2rem] right-0 ${
+                      options ? "" : "hidden"
+                    }`}
+                  >
+                    <ul className="flex flex-col justify-center items-center lightBtnOptions p-2 rounded-lg">
+                      <li className="text-sm my-1 optionLink rounded-lg">
+                        <Link href="/profile">Profile</Link>
+                      </li>
+                      <li className="text-sm my-1 optionLink rounded-lg">
+                        <Link href="/dashboard">Playlist</Link>
+                      </li>
+                      <li className="text-sm my-1 optionLink rounded-lg">
+                        <Link href="/community">Community</Link>
+                      </li>
+                      <li
+                        className="text-sm my-1 optionLink rounded-lg"
+                        onClick={handleLogout}
+                      >
+                        Logout
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              )}
 
               <button className="sm:hidden flex">
                 <p
@@ -235,7 +276,7 @@ const Header: FC = () => {
               Dashboard
             </Link>
           </li>
-          <li className="font-normal text-gray-600 cursor-pointer">
+          {/* <li className="font-normal text-gray-600 cursor-pointer">
             <Link
               href="/about"
               className={`${
@@ -244,7 +285,7 @@ const Header: FC = () => {
             >
               About
             </Link>
-          </li>
+          </li> */}
         </ul>
       </div>
     </header>

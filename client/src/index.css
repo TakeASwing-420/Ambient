@@ -9,7 +9,7 @@
 
   :root {
     --primaryBtn: rgb(168 85 247);
-    --primaryBtnHover: #9333ea;
+    --primaryBtnHover: #9c41f1;
     --secondaryBtn: #ffffff;
     --secondaryBtnHover: rgb(243 232 255);
     --title: #9333ea;
@@ -36,7 +36,8 @@ body.dark-mode .logo {
 }
 
 body.dark-mode #navbar {
-  background: #0f0f1a;
+  /* background: #0f0f1a; */
+  background: rgb(15, 15, 26, 0.7);
 }
 
 body.dark-mode .navLink {
@@ -51,17 +52,17 @@ body.dark-mode .activeLink {
   color: var(--primaryBtnHover);
 }
 
-body.dark-mode .home{
+body.dark-mode .home {
   background: #1a1a2e;
   color: white;
 }
 
-body.dark-mode .convert{
+body.dark-mode .convert {
   background: #1a1a2e;
   color: white;
 }
 
-body.dark-mode .dashboard{
+body.dark-mode .dashboard {
   background: #1a1a2e;
   color: white;
 }
@@ -80,6 +81,19 @@ body.dark-mode .lightBtn:hover {
   color: #f0f0f0 !important;
 }
 
+body.dark-mode .lightBtnOptions {
+  background: #2a1548;
+  border: none;
+}
+
+body.dark-mode .lightBtnOptions:hover {
+  color: #f0f0f0 !important;
+}
+
+body.dark-mode .optionLink:hover {
+  background-color: #7e22ce2a;
+}
+
 body.dark-mode .darkBtn {
   background: #7e22ce;
   border: none;
@@ -90,7 +104,7 @@ body.dark-mode .darkBtn:hover {
   color: #f0f0f0;
 }
 
-body.dark-mode .AI{
+body.dark-mode .AI {
   background: #0f0f1a;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(255, 255, 255, 0.03);
 }
@@ -118,7 +132,7 @@ body.dark-mode .player {
   background: linear-gradient(to right, #4336d1, #7824bc, #de1f6f) !important;
 }
 
-body.dark-mode .lightText{
+body.dark-mode .lightText {
   color: #a1a1a1;
 }
 
@@ -161,7 +175,8 @@ body.dark-mode .playBtn:hover {
 
 body.dark-mode .playlist {
   background: #0f0f1a;
-  box-shadow: 1px 8px 10px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(255, 255, 255, 0.03);
+  box-shadow: 1px 8px 10px rgba(0, 0, 0, 0.6),
+    0 2px 6px rgba(255, 255, 255, 0.03);
   border: none;
 }
 
@@ -196,13 +211,27 @@ body.dark-mode .authBtn:hover {
   color: #f0f0f0 !important;
 }
 
-.hero {
-  background: url("https://static.vecteezy.com/system/resources/thumbnails/040/983/192/small_2x/ai-generated-an-animated-scene-featuring-a-girl-with-wine-and-a-cat-against-a-nighttime-cityscape-backdrop-lo-fi-style-continuous-loop-free-video.jpg") no-repeat center center/cover;
-  min-height: 85dvh;
+.optionLink {
+  width: 100%;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  padding: 0.2em 1em;
 }
 
-.scrolled {
-  box-shadow: 1px 1px 10px gray;
+.lightBtnOptions {
+  background: #faf5ff;
+  border: none;
+}
+
+.optionLink:hover {
+  background-color: var(--secondaryBtnHover);
+}
+
+.hero {
+  background: url("https://static.vecteezy.com/system/resources/thumbnails/040/983/192/small_2x/ai-generated-an-animated-scene-featuring-a-girl-with-wine-and-a-cat-against-a-nighttime-cityscape-backdrop-lo-fi-style-continuous-loop-free-video.jpg")
+    no-repeat center center/cover;
+  min-height: 85dvh;
 }
 
 .lightBtn {
@@ -299,4 +328,106 @@ label {
 .activeBtn {
   background: white !important;
   color: black;
+}
+
+.mask-clip-path {
+  clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0);
+}
+
+.mask-clip-path2 {
+  clip-path: polygon(34% 0, 52% 0%, 70% 70%, 20% 80%);
+  overflow: hidden;
+}
+
+@keyframes bouncePop {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.35);
+  }
+  60% {
+    transform: scale(0.85);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.bounce-pop {
+  display: inline-block;
+  transition: transform 0.3s;
+}
+
+.card:hover .bounce-pop {
+  animation: bouncePop 0.4s ease-out;
+}
+
+
+@keyframes floatSlow {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  20% {
+    transform: translate(14px, -10px);
+  }
+  40% {
+    transform: translate(-12px, 16px);
+  }
+  60% {
+    transform: translate(18px, 12px);
+  }
+  80% {
+    transform: translate(-16px, -14px);
+  }
+  100% {
+    transform: translate(0px, 0px);
+  }
+}
+
+@keyframes floatFast {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-10px, -8px);
+  }
+  50% {
+    transform: translate(8px, 6px);
+  }
+  75% {
+    transform: translate(-6px, 10px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 8s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: floatFast 6s ease-in-out infinite;
+}
+
+.animatePic {
+  filter: saturate(0.3);
+  transition: all 0.3s ease-in-out;
+  border-radius: 1em;
+}
+
+.animatePic:hover {
+  filter: saturate(1);
+  scale: 1.02;
+}
+
+.notFound {
+  background: #0f0f1a;
+  color: white;
+}
+
+.cardNotFound {
+  background: #1a1a2e;
+  color: white;
 }

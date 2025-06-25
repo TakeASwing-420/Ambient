@@ -150,7 +150,7 @@ const WorkflowContainer: FC = () => {
 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 card2">
             <h4 className="font-medium purpleTitle mb-2">How it works:</h4>
-            <ul className="text-sm navLink space-y-1">
+            <ul className="text-sm subText space-y-1">
               <li>• AI analyzes your video's visual content and mood</li>
               <li>
                 • Generates custom lofi music parameters (key, tempo, energy)

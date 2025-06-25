@@ -10,6 +10,8 @@ import About from "@/pages/About";
 import Signin from "@/pages/Signin";
 import Login from "@/pages/login";
 import { AuthProvider, useAuth } from "./auth/AuthContext.jsx";
+import Community from "./pages/Community.jsx";
+import Profile from "./pages/Profile.jsx";
 
 const RequireAuth = ({ children }) => {
   const { user, loading } = useAuth();
@@ -41,7 +43,8 @@ function Router() {
           </RequireAuth>
         </AuthProvider>
       </Route>
-      <Route path="/about" component={About} />
+      <Route path="/community" component={Community} />
+      <Route path="/profile" component={Profile} />
       <Route path="/signin" component={Signin} />
       <Route path="/login" component={Login} />
       {/* Fallback to 404 */}
