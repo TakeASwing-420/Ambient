@@ -1,11 +1,11 @@
 import React, { useState, useEffect, FC } from "react";
 import { IoPlayOutline } from "react-icons/io5";
 import { IoMdAdd } from "react-icons/io";
-import { FiDownload } from "react-icons/fi";
 import { TbMusicDown } from "react-icons/tb";
 import { RiVideoDownloadLine, RiDeleteBinLine } from "react-icons/ri";
 import { IoShareSocial } from "react-icons/io5";
 import { MdOutlineDone, MdOutlineEdit } from "react-icons/md";
+import { IoCloseOutline } from "react-icons/io5";
 import { toast } from "@/hooks/use-toast";
 import {
   appwriteDatabases,
@@ -19,6 +19,8 @@ const TrackHistory: FC = () => {
   const [docs, setDocs] = useState([]);
   const [editingTrackId, setEditingTrackId] = useState(null);
   const [editedNames, setEditedNames] = useState({});
+  const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
+  const [userPlaylists, setUserPlaylists] = useState([]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -124,6 +126,64 @@ const TrackHistory: FC = () => {
     getData();
   }, []);
 
+  const handleAddToPlaylist = async (trackId: string) => {
+    try {
+      const user = await account.get();
+
+      const response = await appwriteDatabases.listDocuments(
+        import.meta.env.VITE_APPWRITE_DATABASE_ID,
+        import.meta.env.VITE_APPWRITE_PLAYLIST_COLLECTION_ID,
+        [Query.equal("clientID", user.$id)]
+      );
+
+      setUserPlaylists(response.documents);
+      setSelectedTrackId(trackId);
+    } catch (err) {
+      console.error("Error fetching playlists:", err);
+      toast({
+        title: "Playlist Error",
+        description: "Unable to fetch your playlists!",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePlaylistSelection = async (playlistId: string) => {
+    try {
+      const playlist = await appwriteDatabases.getDocument(
+        import.meta.env.VITE_APPWRITE_DATABASE_ID,
+        import.meta.env.VITE_APPWRITE_PLAYLIST_COLLECTION_ID,
+        playlistId
+      );
+
+      // Add the selected track to the playlist's initTracks array
+      const updatedTracks = playlist.initTracks
+        ? [...playlist.initTracks, selectedTrackId]
+        : [selectedTrackId];
+
+      await appwriteDatabases.updateDocument(
+        import.meta.env.VITE_APPWRITE_DATABASE_ID,
+        import.meta.env.VITE_APPWRITE_PLAYLIST_COLLECTION_ID,
+        playlistId,
+        {
+          initTracks: updatedTracks,
+        }
+      );
+
+      toast({
+        title: "Track Added",
+        description: "Track have been successfully added to your playlist",
+      });
+      setSelectedTrackId(null);
+    } catch (err) {
+      console.error("Error adding track to playlist:", err);
+      toast({
+        title: "Error",
+        description: "Failed to add your track to playlist!",
+      });
+    }
+  };
+
   return (
     <main className="w-full flex flex-col gap-4 justify-center items-center">
       <div className="w-full px-4 py-2 flex md:flex-row flex-col justify-between items-center">
@@ -143,6 +203,26 @@ const TrackHistory: FC = () => {
           </select>
         </div>
       </div>
+
+      {selectedTrackId && (
+        <div className="card shadow p-6 rounded-md mt-2 fixed top-[40%]">
+          <IoCloseOutline className="text-gray-400 hover:text-white transition-all duration-200 ease-in-out text-xl absolute top-3 right-2" onClick={() => setSelectedTrackId(null)} />
+          <h2 className="font-semibold text-sm mb-2">Add to Playlist</h2>
+          <select
+            onChange={(e) => handlePlaylistSelection(e.target.value)}
+            className="px-2 py-1 rounded-md w-full home"
+          >
+            <option value="" className="card">
+              Select a playlist
+            </option>
+            {userPlaylists.map((playlist) => (
+              <option key={playlist.$id} value={playlist.$id} className="card">
+                {playlist.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Fallback */}
       {docs.length === 0 ? (
@@ -188,7 +268,10 @@ const TrackHistory: FC = () => {
             {/* Right side actions */}
             <div className="flex gap-6 justify-center items-center">
               <p className="text-sm subText">{track.duration}s</p>
-              <IoMdAdd className="text-lg hover:text-purple-600" />
+              <IoMdAdd
+                className="text-lg hover:text-purple-600"
+                onClick={() => handleAddToPlaylist(track.$id)}
+              />
               <TbMusicDown
                 onClick={() => downloadFile(track.audio)}
                 className="text-lg hover:text-purple-600"

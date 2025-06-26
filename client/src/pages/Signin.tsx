@@ -69,6 +69,7 @@ const Signin: FC = () => {
                 className="border-2 formInput"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                required
               />
             </div>
 
@@ -93,6 +94,7 @@ const Signin: FC = () => {
                 className="border-2 formInput"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                required
               />
             </div>
 
@@ -106,6 +108,7 @@ const Signin: FC = () => {
                 className="border-2 formInput"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                required
               />
             </div>
 
@@ -119,6 +122,7 @@ const Signin: FC = () => {
                 className="border-2 formInput"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                required
               />
             </div>
 
