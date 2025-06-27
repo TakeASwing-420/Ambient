@@ -3,35 +3,447 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 234 89% 60%; /* Indigo shade */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
-  }
-}
-
-@layer base {
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
+
+  :root {
+    --primaryBtn: rgb(168 85 247);
+    --primaryBtnHover: #9c41f1;
+    --secondaryBtn: #ffffff;
+    --secondaryBtnHover: rgb(243 232 255);
+    --title: #9333ea;
+    --secondaryText: #717a7a;
+    --cardBg: #ffffff;
   }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body.dark-mode {
+  background: #0f0f1a;
+  color: #f0f0f0;
+}
+
+body.dark-mode .logo {
+  color: #f0f0f0;
+}
+
+body.dark-mode #navbar {
+  /* background: #0f0f1a; */
+  background: rgb(15, 15, 26, 0.7);
+}
+
+body.dark-mode .navLink {
+  color: #bbb;
+}
+
+body.dark-mode .navLink:hover {
+  color: var(--primaryBtnHover);
+}
+
+body.dark-mode .activeLink {
+  color: var(--primaryBtnHover);
+}
+
+body.dark-mode .home {
+  background: #1a1a2e;
+  color: white;
+}
+
+body.dark-mode .convert {
+  background: #1a1a2e;
+  color: white;
+}
+
+body.dark-mode .dashboard {
+  background: #1a1a2e;
+  color: white;
+}
+
+body.dark-mode .subText {
+  color: #bbb !important;
+}
+
+body.dark-mode .lightBtn {
+  background: #7e22ce41;
+  border: none;
+}
+
+body.dark-mode .lightBtn:hover {
+  background: #7e22ce73;
+  color: #f0f0f0 !important;
+}
+
+body.dark-mode .lightBtnOptions {
+  background: #2a1548;
+  border: none;
+}
+
+body.dark-mode .lightBtnOptions:hover {
+  color: #f0f0f0 !important;
+}
+
+body.dark-mode .optionLink:hover {
+  background-color: #7e22ce2a;
+}
+
+body.dark-mode .darkBtn {
+  background: #7e22ce;
+  border: none;
+}
+
+body.dark-mode .darkBtn:hover {
+  background: #6518a7;
+  color: #f0f0f0;
+}
+
+body.dark-mode .AI {
+  background: #0f0f1a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode .card {
+  background: #0f0f1a;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode .card2 {
+  background: #1a1a2e;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(255, 255, 255, 0.03);
+  border: none;
+}
+
+body.dark-mode .featureLogo {
+  background: #6418a740;
+}
+
+body.dark-mode .footer {
+  background: #0f1825;
+}
+
+body.dark-mode .player {
+  background: linear-gradient(to right, #4336d1, #7824bc, #de1f6f) !important;
+}
+
+body.dark-mode .lightText {
+  color: #a1a1a1;
+}
+
+body.dark-mode .miniCard {
+  background: #9233ea48;
+}
+
+body.dark-mode .option {
+  background: #6418a724;
+  border: 0.2px solid #481179;
+}
+
+body.dark-mode .optionEach:hover {
+  background: #6418a750;
+}
+
+body.dark-mode .activeBtn {
+  background: #1a1a2e !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-mode .sort {
+  background: #0f0f1a;
+  color: #f0f0f0;
+  border: none;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 2px 6px rgba(255, 255, 255, 0.03);
+}
+
+body.dark-mode .trackCard {
+  background: #340a5a;
+}
+
+body.dark-mode .playBtn {
+  background: #8925e0b5;
+}
+
+body.dark-mode .playBtn:hover {
+  background: #9328f0dd;
+}
+
+body.dark-mode .playlist {
+  background: #0f0f1a;
+  box-shadow: 1px 8px 10px rgba(0, 0, 0, 0.6),
+    0 2px 6px rgba(255, 255, 255, 0.03);
+  border: none;
+}
+
+body.dark-mode .mainBg {
+  background: #0f0f1a;
+}
+
+body.dark-mode .secondBg {
+  background: #1a1a2e;
+}
+
+body.dark-mode .link {
+  color: var(--title);
+}
+
+body.dark-mode input {
+  background: #1a1a2e;
+  border: none;
+}
+
+body.dark-mode input:focus {
+  outline: none;
+}
+
+body.dark-mode .authBtn {
+  background: #340a5a !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-mode .authBtn:hover {
+  background: #481179 !important;
+  color: #f0f0f0 !important;
+}
+
+.optionLink {
+  width: 100%;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  padding: 0.2em 1em;
+}
+
+.lightBtnOptions {
+  background: #faf5ff;
+  border: none;
+}
+
+.optionLink:hover {
+  background-color: var(--secondaryBtnHover);
+}
+
+.hero {
+  background: url("https://static.vecteezy.com/system/resources/thumbnails/040/983/192/small_2x/ai-generated-an-animated-scene-featuring-a-girl-with-wine-and-a-cat-against-a-nighttime-cityscape-backdrop-lo-fi-style-continuous-loop-free-video.jpg")
+    no-repeat center center/cover;
+  min-height: 85dvh;
+}
+
+.lightBtn {
+  border-width: 1px;
+  background-color: var(--secondaryBtn);
+  transition: all 0.2s ease-in-out;
+}
+
+.lightBtn:hover {
+  background-color: var(--secondaryBtnHover);
+}
+
+.darkBtn {
+  color: white;
+  border-width: 1px;
+  background-color: var(--primaryBtn);
+  transition: all 0.2s ease-in-out;
+}
+
+.darkBtn:hover {
+  background-color: var(--primaryBtnHover);
+}
+
+.purpleTitle {
+  color: var(--title);
+}
+
+.subText {
+  color: var(--secondaryText);
+}
+
+.card {
+  background-color: var(--cardBg);
+  border-radius: 0.75rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.navLink {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  padding-bottom: 1px;
+}
+
+.navLink:hover {
+  color: var(--primaryBtnHover);
+}
+
+.navLink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0%;
+  height: 1.5px;
+  background-color: var(--primaryBtnHover);
+  transition: width 0.4s ease;
+}
+
+.navLink:hover::after {
+  width: 100%;
+}
+
+.activeLink {
+  color: var(--primaryBtnHover);
+}
+
+.activeLink::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1.5px;
+  background-color: var(--primaryBtnHover);
+  transition: width 0.4s ease;
+}
+
+.formInput {
+  padding: 0.4rem 0.5rem;
+  border-radius: 0.3rem;
+  font-size: 0.8rem;
+  width: 100%;
+}
+
+input:focus {
+  outline-color: #8a9494;
+}
+
+label {
+  font-size: 0.9rem;
+}
+
+.activeBtn {
+  background: white !important;
+  color: black;
+}
+
+.mask-clip-path {
+  clip-path: polygon(0 0, 0 100%, 100% 100%, 100% 0);
+}
+
+.mask-clip-path2 {
+  clip-path: polygon(34% 0, 52% 0%, 70% 70%, 20% 80%);
+  overflow: hidden;
+}
+
+@keyframes bouncePop {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.35);
+  }
+  60% {
+    transform: scale(0.85);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.bounce-pop {
+  display: inline-block;
+  transition: transform 0.3s;
+}
+
+.card:hover .bounce-pop {
+  animation: bouncePop 0.4s ease-out;
+}
+
+
+@keyframes floatSlow {
+  0% {
+    transform: translate(0px, 0px);
+  }
+  20% {
+    transform: translate(14px, -10px);
+  }
+  40% {
+    transform: translate(-12px, 16px);
+  }
+  60% {
+    transform: translate(18px, 12px);
+  }
+  80% {
+    transform: translate(-16px, -14px);
+  }
+  100% {
+    transform: translate(0px, 0px);
+  }
+}
+
+@keyframes floatFast {
+  0% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-10px, -8px);
+  }
+  50% {
+    transform: translate(8px, 6px);
+  }
+  75% {
+    transform: translate(-6px, 10px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 8s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: floatFast 6s ease-in-out infinite;
+}
+
+.animatePic {
+  filter: saturate(0.3);
+  transition: all 0.3s ease-in-out;
+  border-radius: 1em;
+}
+
+.animatePic:hover {
+  filter: saturate(1);
+  scale: 1.02;
+}
+
+.notFound {
+  background: #0f0f1a;
+  color: white;
+}
+
+.cardNotFound {
+  background: #1a1a2e;
+  color: white;
+}
+
+.tooltip-content {
+  border-radius: 0.375rem; /* rounded */
+  background-color: white; /* bg-white */
+  padding: 0.25rem 0.75rem; /* py-1 px-3 */
+  font-size: 0.875rem; /* text-sm */
+  color: black; /* text-black */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+              0 4px 6px -4px rgba(0, 0, 0, 0.1); /* shadow-lg */
+  z-index: 50; /* z-50 */
+}
+
+.userInput {
+  background: #252542 !important;
+  border-bottom: 1px solid rgb(182, 182, 182) !important;
 }

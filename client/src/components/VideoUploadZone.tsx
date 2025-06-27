@@ -53,8 +53,8 @@ const VideoUploadZone: FC<VideoUploadZoneProps> = ({ onFileUpload, isFileSelecte
         ${isDragOver 
           ? 'border-primary bg-primary/5' 
           : isFileSelected 
-            ? 'border-green-300 bg-green-50' 
-            : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+            ? 'border-green-300 bg-green-50/10' 
+            : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50/5'
         }
       `}
       onDragOver={handleDragOver}
@@ -88,7 +88,7 @@ const VideoUploadZone: FC<VideoUploadZoneProps> = ({ onFileUpload, isFileSelecte
         </div>
         
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium purpleTitle mb-2">
             {isFileSelected ? 'Video Selected!' : 'Upload Your Video'}
           </h3>
           <p className="text-gray-500 mb-4">
@@ -98,7 +98,7 @@ const VideoUploadZone: FC<VideoUploadZoneProps> = ({ onFileUpload, isFileSelecte
             }
           </p>
           
-          <Button variant="outline" className="mb-4">
+          <Button className="mb-4 darkBtn">
             Choose Video File
           </Button>
           

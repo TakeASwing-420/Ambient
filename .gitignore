@@ -9,3 +9,5 @@ attached_assets/
 temp/
 __pycache__/
 model/__pycache__/
+lofi_dataset/
+temp.txt

@@ -98,7 +98,7 @@ const WorkflowContainer: FC = () => {
   // Audio generation happens client-side
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-4xl mx-auto">
+    <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-4xl mx-auto card">
       {/* Step 1: Upload Video */}
       {currentStep === 1 && (
         <div className="p-6">
@@ -121,19 +121,18 @@ const WorkflowContainer: FC = () => {
           </h3>
 
           <div className="mb-6">
-            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+            <div className="bg-purple-50 rounded-lg p-4 mb-4 card2">
               <div className="flex items-center justify-between">
                 <div>
-                  <h4 className="font-medium text-gray-900">
-                    {videoFile.name}
-                  </h4>
-                  <p className="text-sm text-gray-500">
+                  <h4 className="font-medium">{videoFile.name}</h4>
+                  <p className="text-sm subText">
                     {videoFile.size} • {videoFile.duration}
                   </p>
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
+                  className="lightBtn"
                   onClick={() => setCurrentStep(1)}
                 >
                   Change Video
@@ -149,9 +148,9 @@ const WorkflowContainer: FC = () => {
             />
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h4 className="font-medium text-blue-900 mb-2">How it works:</h4>
-            <ul className="text-sm text-blue-800 space-y-1">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 card2">
+            <h4 className="font-medium purpleTitle mb-2">How it works:</h4>
+            <ul className="text-sm subText space-y-1">
               <li>• AI analyzes your video's visual content and mood</li>
               <li>
                 • Generates custom lofi music parameters (key, tempo, energy)
@@ -165,14 +164,14 @@ const WorkflowContainer: FC = () => {
             <Button
               variant="outline"
               onClick={() => setCurrentStep(1)}
-              className="border-gray-300 hover:border-gray-400 text-gray-700"
+              className="lightBtn"
             >
               Back
             </Button>
             <Button
               onClick={handleGenerateLofi}
               disabled={isProcessing}
-              className="bg-primary hover:bg-primary/90"
+              className="darkBtn"
             >
               {isProcessing ? "Processing Video..." : "Generate LoFi Video"}
             </Button>
@@ -190,7 +189,7 @@ const WorkflowContainer: FC = () => {
             <h3 className="font-poppins font-semibold text-xl mb-2">
               Creating Your LoFi Video
             </h3>
-            <p className="text-gray-600 max-w-md mx-auto mb-4">
+            <p className="subText max-w-md mx-auto mb-4">
               Our AI is analyzing your video and generating the perfect lofi
               soundtrack. This might take a few minutes...
             </p>
@@ -207,7 +206,7 @@ const WorkflowContainer: FC = () => {
             <Button
               onClick={handleStartOver}
               variant="outline"
-              className="mt-4"
+              className="mt-4 darkBtn"
             >
               Try Again
             </Button>
@@ -227,9 +226,7 @@ const WorkflowContainer: FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {combinedBlob && (
               <div>
-                <h4 className="font-medium text-gray-900 mb-3">
-                  Processed Video
-                </h4>
+                <h4 className="font-medium mb-3">Processed Video</h4>
                 <video
                   src={URL.createObjectURL(combinedBlob)}
                   controls
@@ -240,10 +237,8 @@ const WorkflowContainer: FC = () => {
             )}
             <div className="space-y-4">
               <div>
-                <h4 className="font-medium text-gray-900 mb-3">
-                  Music Parameters
-                </h4>
-                <div className="bg-white p-4 rounded-lg border text-sm">
+                <h4 className="font-medium mb-3">Music Parameters</h4>
+                <div className="bg-white p-4 rounded-lg border text-sm card2">
                   <div className="grid grid-cols-2 gap-3">
                     <div>Key: {params_res?.key || "C"}</div>
                     <div>BPM: {params_res?.bpm || "85"}</div>
@@ -259,22 +254,24 @@ const WorkflowContainer: FC = () => {
               </div>
 
               {/* Audio Generation Controls */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-medium text-gray-900 mb-3">
-                  Generate Lofi Audio
-                </h4>
+              <div className="bg-gray-50 p-4 rounded-lg card2">
+                <h4 className="font-medium mb-3">Generate Lofi Video</h4>
 
                 <div className="flex gap-3">
                   <Button
                     onClick={() => generateAudio(params_res, videoFile.file)}
                     disabled={isGenerating}
-                    className="flex-1"
+                    className="flex-1 darkBtn"
                   >
-                    {isGenerating ? "Generating Audio..." : "Generate Audio"}
+                    {isGenerating ? "Generating Audio..." : "Generate Video"}
                   </Button>
 
                   {audioBlob && (
-                    <Button onClick={() => downloadAudio()} variant="outline">
+                    <Button
+                      onClick={() => downloadAudio()}
+                      variant="outline"
+                      className="lightBtn"
+                    >
                       Download Audio
                     </Button>
                   )}
@@ -294,15 +291,21 @@ const WorkflowContainer: FC = () => {
           </div>
 
           <div className="flex justify-between">
-            <Button variant="outline" onClick={handleStartOver}>
+            <Button
+              variant="outline"
+              onClick={handleStartOver}
+              className="lightBtn"
+            >
               Create Another
             </Button>
-            {combinedBlob && <Button
-              onClick={handleDownloadVideo}
-              className="bg-primary hover:bg-primary/90"
-            >
-              Download Video
-            </Button>}
+
+             <Button className="darkBtn">Add to Playlist</Button>
+
+            {combinedBlob && (
+              <Button onClick={handleDownloadVideo} className="darkBtn">
+                Download Video
+              </Button>
+            )}
           </div>
         </div>
       )}

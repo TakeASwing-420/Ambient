@@ -5,166 +5,231 @@ import { Track } from "./track";
 
 export class Creator {
   currentTrack: Track;
-  gain: Tone.Gain;
-  samplePlayers: Map<string, Tone.Player[]>;
-  instruments: Map<Instrument, any>;
-  recorder: Tone.Recorder;
 
   constructor(currentTrack: Track) {
     this.currentTrack = currentTrack;
-    this.gain = new Tone.Gain();
-    this.samplePlayers = new Map();
-    this.instruments = new Map();
-    this.recorder = new Tone.Recorder();
   }
 
   async load(): Promise<Blob> {
-    await Tone.start();
-    Tone.getTransport().bpm.value = this.currentTrack.bpm;
+    // Use Tone.Offline for faster-than-realtime rendering
+    const buffer = await Tone.Offline(async (context) => {
+      // Set up transport settings
+      context.transport.bpm.value = this.currentTrack.bpm;
+      context.transport.swing = this.currentTrack.swing ? 2 / 3 : 0;
 
-    this.samplePlayers = new Map();
-    this.instruments = new Map();
+      // Create main gain node for mixing
+      const mainGain = new Tone.Gain(0.8).toDestination();
 
-    // Load sample players
-    for (const [sampleGroupName, sampleIndex] of Array.from(
-      this.currentTrack.samples
-    )) {
-      const sampleGroup = Samples.SAMPLEGROUPS.get(sampleGroupName);
-      if (!sampleGroup) continue;
+      // Maps to store our audio sources
+      const samplePlayers = new Map<string, Tone.Player[]>();
+      const instruments = new Map<Instrument, any>();
 
-      const player = new Tone.Player({
-        url: sampleGroup.getSampleUrl(sampleIndex),
-        volume: sampleGroup.volume,
-        loop: true,
-        fadeIn: "8n",
-        fadeOut: "8n",
-      });
-      console.log(
-        `Loading sample: ${sampleGroupName} at index ${sampleIndex} with URL: ${sampleGroup.getSampleUrl(sampleIndex)}`
-      );
-      player.chain(
-        ...sampleGroup.getFilters(),
-        this.gain
-      );
-      player.sync();
+      // Load sample players
+      for (const [sampleGroupName, sampleIndex] of Array.from(
+        this.currentTrack.samples
+      )) {
+        const sampleGroup = Samples.SAMPLEGROUPS.get(sampleGroupName);
+        if (!sampleGroup) continue;
 
-      if (!this.samplePlayers.has(sampleGroupName)) {
-        this.samplePlayers.set(sampleGroupName, Array(sampleGroup.size));
-      }
-      this.samplePlayers.get(sampleGroupName)![sampleIndex] = player;
-    }
+        const player = new Tone.Player({
+          url: sampleGroup.getSampleUrl(sampleIndex),
+          volume: sampleGroup.volume,
+          loop: true,
+          fadeIn: "8n",
+          fadeOut: "8n",
+        });
 
-    // load instruments
-    const instrumentVolumes = new Map();
-    for (const instrument of this.currentTrack.instruments) {
-      const toneInstrument = getInstrument(instrument)
-        .chain(
-          ...getInstrumentFilters(instrument),
-          this.gain
-        )
-        .sync();
-      this.instruments.set(instrument, toneInstrument);
-      instrumentVolumes.set(toneInstrument, toneInstrument.volume.value);
-      console.log(
-        `Loading instrument: ${instrument} with volume: ${toneInstrument.volume.value}`
-      );
-    }
-
-    // set up swing
-    Tone.getTransport().swing = this.currentTrack.swing ? 2 / 3 : 0;
-
-    // wait until all samples are loaded
-    await Tone.loaded();
-
-    for (const sampleLoop of this.currentTrack.sampleLoops) {
-      const samplePlayer = this.samplePlayers.get(sampleLoop.sampleGroupName)[
-        sampleLoop.sampleIndex
-      ];
-      samplePlayer.start(sampleLoop.startTime);
-      samplePlayer.stop(sampleLoop.stopTime);
-      console.log(
-        `Starting sample loop: ${sampleLoop.sampleGroupName} at index ${sampleLoop.sampleIndex} from ${sampleLoop.startTime} to ${sampleLoop.stopTime}`
-      );
-    }
-
-    for (const noteTiming of this.currentTrack.instrumentNotes) {
-      const instrumentSampler = this.instruments.get(noteTiming.instrument);
-      if (noteTiming.duration) {
-        instrumentSampler.triggerAttackRelease(
-          noteTiming.pitch,
-          noteTiming.duration,
-          noteTiming.time,
-          noteTiming.velocity !== undefined ? noteTiming.velocity : 1
+        console.log(
+          `Loading sample: ${sampleGroupName} at index ${sampleIndex} with URL: ${sampleGroup.getSampleUrl(
+            sampleIndex
+          )}`
         );
-      } else {
-        instrumentSampler.triggerAttack(
-          noteTiming.pitch,
-          noteTiming.time,
-          noteTiming.velocity !== undefined ? noteTiming.velocity : 1
-        );
-      }
 
-      console.log(
-        `Scheduling note: ${noteTiming.instrument} playing ${noteTiming.pitch} at ${noteTiming.time} with duration ${noteTiming.duration} and velocity ${noteTiming.velocity}`
-      );
-    }
-    this.gain.connect(this.recorder);
+        // Create filters with context - temporarily set context for filter creation
+        const originalContext = Tone.getContext();
+        Tone.setContext(context);
 
-    const fadeOutBegin =
-      this.currentTrack.length - this.currentTrack.fadeOutDuration;
+        const filters = sampleGroup.getFilters().map((filterConfig) => {
+          // Recreate filters with the offline context
+          if (filterConfig instanceof Tone.Filter) {
+            return new Tone.Filter({
+              type: filterConfig.type,
+              frequency: filterConfig.frequency.value,
+              Q: filterConfig.Q.value,
+            });
+          } else if (filterConfig instanceof Tone.Reverb) {
+            const reverb = new Tone.Reverb({
+              decay: Tone.Time(filterConfig.decay).toSeconds(),
+              wet: filterConfig.wet.value,
+              preDelay: Tone.Time(filterConfig.preDelay).toSeconds(),
+            });
+            return reverb;
+          }
+          // Add other filter types as needed
+          return filterConfig;
+        });
 
-    // schedule events to do every 100ms
-    Tone.getTransport().scheduleRepeat((time) => {
-      const seconds = Tone.getTransport().getSecondsAtTime(time);
-      // schedule fade out in the last seconds
-      const volumeOffset =
-        seconds < fadeOutBegin ? 0 : (seconds - fadeOutBegin) * 4;
-      instrumentVolumes.forEach((volume, sampler) => {
-        sampler.volume.value = volume - volumeOffset;
-      });
-    }, 0.1);
-    
-    console.log(
-      `Transport scheduled to repeat every 100ms with fade out starting at ${fadeOutBegin} seconds`
-    );
-    // Record and return audio blob
-    return await this.recordAndSave();
-  }
+        // Restore original context
+        Tone.setContext(originalContext);
 
-  private async recordAndSave(): Promise<Blob> {
-    await Tone.start();
-    console.log("Starting audio recording...");
-    this.recorder.start();
-    console.log("Audio recording started");
-    Tone.getTransport().start();
-    console.log("Transport started");
-    return new Promise((resolve) => {
-      setTimeout(async () => {
-        const recording = await this.recorder.stop();
-        Tone.getTransport().stop();
-        Tone.getTransport().cancel();
-        resolve(recording);
-      }, this.currentTrack.length * 1000);
-    });
-  }
+        player.chain(...filters, mainGain);
 
-  dispose() {
-    // Clean up Tone.js objects
-    this.samplePlayers.forEach((players) => {
-      players.forEach((player) => {
-        if (player) {
-          player.dispose();
+        if (!samplePlayers.has(sampleGroupName)) {
+          samplePlayers.set(sampleGroupName, Array(sampleGroup.size));
         }
-      });
-    });
+        samplePlayers.get(sampleGroupName)![sampleIndex] = player;
+      }
 
-    this.instruments.forEach((instrument) => {
-      instrument.dispose();
-    });
+      // Load instruments - pass context
+      const instrumentVolumes = new Map();
+      for (const instrument of this.currentTrack.instruments) {
+        const toneInstrument = getInstrument(instrument, context).chain(
+          ...getInstrumentFilters(instrument, context),
+          mainGain
+        );
 
-    this.gain.dispose();
-    this.recorder.dispose();
-    Tone.getTransport().stop();
-    Tone.getTransport().cancel();
+        instruments.set(instrument, toneInstrument);
+        instrumentVolumes.set(toneInstrument, toneInstrument.volume.value);
+
+        console.log(
+          `Loading instrument: ${instrument} with volume: ${toneInstrument.volume.value}`
+        );
+      }
+
+      // Wait for all samples to load
+      await Tone.loaded();
+
+      // Schedule sample loops
+      for (const sampleLoop of this.currentTrack.sampleLoops) {
+        const samplePlayer = samplePlayers.get(sampleLoop.sampleGroupName)?.[
+          sampleLoop.sampleIndex
+        ];
+
+        if (samplePlayer) {
+          samplePlayer.start(sampleLoop.startTime);
+          samplePlayer.stop(sampleLoop.stopTime);
+
+          console.log(
+            `Scheduling sample loop: ${sampleLoop.sampleGroupName} at index ${sampleLoop.sampleIndex} from ${sampleLoop.startTime} to ${sampleLoop.stopTime}`
+          );
+        }
+      }
+
+      // Schedule instrument notes
+      for (const noteTiming of this.currentTrack.instrumentNotes) {
+        const instrumentSampler = instruments.get(noteTiming.instrument);
+        if (!instrumentSampler) continue;
+
+        if (noteTiming.duration) {
+          instrumentSampler.triggerAttackRelease(
+            noteTiming.pitch,
+            noteTiming.duration,
+            noteTiming.time,
+            noteTiming.velocity !== undefined ? noteTiming.velocity : 1
+          );
+        } else {
+          instrumentSampler.triggerAttack(
+            noteTiming.pitch,
+            noteTiming.time,
+            noteTiming.velocity !== undefined ? noteTiming.velocity : 1
+          );
+        }
+
+        console.log(
+          `Scheduling note: ${noteTiming.instrument} playing ${noteTiming.pitch} at ${noteTiming.time} with duration ${noteTiming.duration} and velocity ${noteTiming.velocity}`
+        );
+      }
+
+      // Schedule fade out automation
+      const fadeOutBegin =
+        this.currentTrack.length - this.currentTrack.fadeOutDuration;
+
+      // Create automation for fade out
+      context.transport.scheduleRepeat((time) => {
+        const seconds = context.transport.getSecondsAtTime(time);
+        if (seconds >= fadeOutBegin) {
+          const fadeProgress =
+            (seconds - fadeOutBegin) / this.currentTrack.fadeOutDuration;
+          const volumeReduction = fadeProgress * 60; // 60dB fade
+
+          instrumentVolumes.forEach((originalVolume, sampler) => {
+            sampler.volume.setValueAtTime(
+              originalVolume - volumeReduction,
+              time
+            );
+          });
+        }
+      }, 0.1);
+
+      console.log(
+        `Scheduled fade out starting at ${fadeOutBegin} seconds for duration ${this.currentTrack.fadeOutDuration} seconds`
+      );
+
+      // Start transport for offline rendering
+      context.transport.start(0);
+    }, this.currentTrack.length);
+
+    // Convert ToneAudioBuffer to Blob
+    return this.toneAudioBufferToBlob(buffer);
+  }
+
+  private toneAudioBufferToBlob(buffer: Tone.ToneAudioBuffer): Blob {
+    // Get the underlying AudioBuffer from ToneAudioBuffer
+    const audioBuffer = buffer.get();
+
+    if (!audioBuffer) {
+      throw new Error("Failed to get AudioBuffer from ToneAudioBuffer");
+    }
+
+    // Convert AudioBuffer to WAV format
+    const length = audioBuffer.length;
+    const numberOfChannels = audioBuffer.numberOfChannels;
+    const sampleRate = audioBuffer.sampleRate;
+
+    // Calculate buffer size for WAV file
+    const arrayBuffer = new ArrayBuffer(44 + length * numberOfChannels * 2);
+    const view = new DataView(arrayBuffer);
+
+    // WAV file header
+    const writeString = (offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+
+    writeString(0, "RIFF");
+    view.setUint32(4, 36 + length * numberOfChannels * 2, true);
+    writeString(8, "WAVE");
+    writeString(12, "fmt ");
+    view.setUint32(16, 16, true); // PCM chunk size
+    view.setUint16(20, 1, true); // PCM format
+    view.setUint16(22, numberOfChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * numberOfChannels * 2, true); // byte rate
+    view.setUint16(32, numberOfChannels * 2, true); // block align
+    view.setUint16(34, 16, true); // bits per sample
+    writeString(36, "data");
+    view.setUint32(40, length * numberOfChannels * 2, true);
+
+    // Convert float samples to 16-bit PCM
+    let offset = 44;
+    for (let i = 0; i < length; i++) {
+      for (let channel = 0; channel < numberOfChannels; channel++) {
+        const sample = Math.max(
+          -1,
+          Math.min(1, audioBuffer.getChannelData(channel)[i])
+        );
+        view.setInt16(offset, sample * 0x7fff, true);
+        offset += 2;
+      }
+    }
+
+    return new Blob([arrayBuffer], { type: "audio/wav" });
+  }
+
+  // No longer needed since we're not using real-time rendering
+  dispose() {
+    // Cleanup is handled automatically by Tone.Offline
+    console.log("Creator disposed");
   }
 }
