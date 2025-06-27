@@ -3,12 +3,11 @@ import torch
 import numpy as np
 from PIL import Image
 from sklearn.metrics.pairwise import cosine_similarity
-from transformers import CLIPModel, CLIPProcessor
+import clip
 
-# Load CLIP
 device = "cuda" if torch.cuda.is_available() else "cpu"
-clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
-preprocess = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+clip_model, preprocess = clip.load("ViT-B/32", device=device)
+
 
 FRAME_INTERVAL = 5
 PIXEL_SIM_THRESHOLD = 0.95
@@ -115,7 +114,7 @@ if __name__ == "__main__":
 
     for vid, info in results.items():
         print(f"\n🎬 {vid}")
-        print(f"→ Final Prediction: {'Lofiable' if info['final_label'] else 'Not Lofiable'}")
+        print(f"→ Final Prediction: {'Lofiable' if info['is_lofifiable'] else 'Not Lofiable'}")
         print(f"→ Confidence: {info['confidence']:.2f}")
         print(f"→ Average Probability: {info['avg_prob']:.4f}")
         print(f"→ Frames Analyzed: {len(info['frame_probs'])}")

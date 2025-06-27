@@ -5,19 +5,22 @@ from model.lofi2lofi_model import Decoder as Lofi2LofiDecoder
 from model.constants import HIDDEN_SIZE
 from svm_frame_predictor import *
 
-model = load_svm_model("checkpoints")
+# Load SVM model globally
+svm_model = load_svm_model("checkpoints")
 
-def decode(model: Lofi2LofiDecoder, video_path: str) -> Optional[str]:
+def decode(decoder: Lofi2LofiDecoder, video_path: str) -> Optional[str]:
     mu = torch.randn(1, HIDDEN_SIZE)
     test_videos = [video_path]
 
-    lofify = predict_per_frame_with_final(model, test_videos, method='mean')
+    # Use SVM model for prediction
+    lofify_results = predict_per_frame_with_final(svm_model, test_videos, method='mean')
+    lofify = lofify_results.get(video_path, {})
 
     try:
-        is_lofifiable = lofify["is_lofifiable"]
+        is_lofifiable = lofify.get("is_lofifiable", False)
 
         if is_lofifiable:
-            hash, (pred_chords, pred_notes, tempo, pred_key, pred_mode, valence, energy) = model.decode(mu)
+            hash, (pred_chords, pred_notes, tempo, pred_key, pred_mode, valence, energy) = decoder.decode(mu)
             output = Output(hash, pred_chords, pred_notes, tempo, pred_key, pred_mode, valence, energy)
             json = output.to_json()
             return json
