@@ -1,14 +1,18 @@
 import torch
 from output import Output
-from videoprocessor import predict_music_features
 from typing import Optional
 from model.lofi2lofi_model import Decoder as Lofi2LofiDecoder
 from model.constants import HIDDEN_SIZE
+from svm_frame_predictor import *
+
+model = load_svm_model("checkpoints")
 
 def decode(model: Lofi2LofiDecoder, video_path: str) -> Optional[str]:
     mu = torch.randn(1, HIDDEN_SIZE)
+    test_videos = [video_path]
 
-    lofify = predict_music_features(video_path)
+    lofify = predict_per_frame_with_final(model, test_videos, method='mean')
+
     try:
         is_lofifiable = lofify["is_lofifiable"]
 
