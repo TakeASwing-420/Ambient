@@ -1,9 +1,7 @@
 from pathlib import Path
 import cv2
 import torch
-import numpy as np
 from transformers import CLIPProcessor, CLIPModel
-from sklearn.metrics.pairwise import cosine_similarity
 from model.Lofifiable_model import LofiClassifier
 import model
 import os
@@ -17,12 +15,6 @@ checkpoint_path = Path(__file__).parent / "checkpoints" / "lofi_nn_classifier.pt
 checkpoint = torch.load(checkpoint_path, map_location=device)  # Update path
 classifier.load_state_dict(checkpoint)
 classifier.eval()
-
-# Define feature label sets
-valence_labels = ["sad", "neutral", "happy"]
-tempo_labels = ["slow tempo", "medium tempo", "fast tempo"]
-energy_labels = ["low energy", "moderate energy", "high energy"]
-swing_labels = ["mechanical rhythm", "slightly swung rhythm", "very swung rhythm"]
 
 # Frame extraction with checks and logging
 def extract_frames(video_path, num_frames=10):
@@ -56,15 +48,6 @@ def extract_frames(video_path, num_frames=10):
     print(f"[INFO] Extracted {len(frames)} frames from '{video_path}'")
     return frames
 
-# Helper: compute similarities between image embedding and text prompts
-def rank_labels(image_embedding, text_labels):
-    inputs = processor(text=text_labels, return_tensors="pt", padding=True).to(device)
-    with torch.no_grad():
-        text_features = model.get_text_features(**inputs)
-    similarities = cosine_similarity(image_embedding.cpu(), text_features.cpu())[0]
-    return similarities
-
-# Main predictor with safety checks
 # Main predictor with safety checks
 def predict_music_features(video_path):
     frames = extract_frames(video_path)
@@ -82,25 +65,7 @@ def predict_music_features(video_path):
         lofi_score = classifier(image_embedding).item()  # value between 0–1
     lofifiable:bool = lofi_score > 0.5  # threshold
 
-    # Compute similarity-based features
-    valence_scores = rank_labels(image_embedding, valence_labels)
-    tempo_scores = rank_labels(image_embedding, tempo_labels)
-    energy_scores = rank_labels(image_embedding, energy_labels)
-    swing_scores = rank_labels(image_embedding, swing_labels)
-
-    # Normalize scores to [0, 1]
-    valence = np.dot(valence_scores, [0.0, 0.5, 1.0]) / valence_scores.sum()
-    tempo_idx = int(np.argmax(tempo_scores))
-    energy = np.dot(energy_scores, [1.0, 0.5, 0.0]) / energy_scores.sum()
-    swing = np.dot(swing_scores, [0, 0.5, 1.0]) / swing_scores.sum()
-
-    tempo_str = tempo_labels[tempo_idx].replace(" tempo", "")
-
     return {
-        "valence": round(valence, 3),
-        "tempo": tempo_str,
-        "energy": round(energy, 3),
-        "swing": round(swing, 3),
         "lofifiable_score": round(lofi_score, 3),
         "is_lofifiable": lofifiable
     }

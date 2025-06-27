@@ -13,8 +13,8 @@ def decode(model: Lofi2LofiDecoder, video_path: str) -> Optional[str]:
         is_lofifiable = lofify["is_lofifiable"]
 
         if is_lofifiable:
-            hash, (pred_chords, pred_notes, _, pred_key, pred_mode, _, _) = model.decode(mu)
-            output = Output(hash, pred_chords, pred_notes, lofify["tempo"], pred_key, pred_mode, lofify["valence"], lofify["energy"],lofify["swing"])
+            hash, (pred_chords, pred_notes, tempo, pred_key, pred_mode, valence, energy) = model.decode(mu)
+            output = Output(hash, pred_chords, pred_notes, tempo, pred_key, pred_mode, valence, energy)
             json = output.to_json()
             return json
         else:
