@@ -200,9 +200,9 @@ const WorkflowContainer: FC = () => {
       {/* Error State */}
       {error && (
         <div className="p-6">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h4 className="font-medium text-red-800 mb-2">Processing Error</h4>
-            <p className="text-red-700 text-sm">{error}</p>
+          <div className="bg-red-600/20 border border-red-600 rounded-lg p-4">
+            <h4 className="font-medium text-red-200 mb-2">Processing Error</h4>
+            <p className="text-red-100 text-sm">Input video is not lofifiable.</p>
             <Button
               onClick={handleStartOver}
               variant="outline"
@@ -223,7 +223,7 @@ const WorkflowContainer: FC = () => {
             </h3>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="flex gap-6 mb-6 justify-center items-center">
             {combinedBlob && (
               <div>
                 <h4 className="font-medium mb-3">Processed Video</h4>
@@ -235,19 +235,19 @@ const WorkflowContainer: FC = () => {
                 />
               </div>
             )}
-            <div className="space-y-4">
-              <div>
-                <h4 className="font-medium mb-3">Music Parameters</h4>
+            <div className="space-y-4 w-fit">
+              <div className="px-0">
+                <h4 className="font-poppins font-bold mb-3 text-2xl">Music Parameters</h4>
                 <div className="bg-white p-4 rounded-lg border text-sm card2">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>Key: {params_res?.key || "C"}</div>
-                    <div>BPM: {params_res?.bpm || "85"}</div>
-                    <div>
-                      Energy: {((params_res?.energy || 0.5) * 100).toFixed(0)}%
+                  <div className="grid grid-cols-2 gap-x-16 gap-y-6 px-16 py-6 text-[1.15rem]">
+                    <div className="font-bold">Key: <span className="purpleTitle ml-1">{params_res?.key || "C"}</span></div>
+                    <div className="font-bold">BPM: <span className="purpleTitle ml-1">{params_res?.bpm || "85"}</span></div>
+                    <div className="font-bold">
+                      Energy: <span className="purpleTitle ml-1">{((params_res?.energy || 0.5) * 100).toFixed(0)}%</span>
                     </div>
-                    <div>
-                      Valence: {((params_res?.valence || 0.5) * 100).toFixed(0)}
-                      %
+                    <div className="font-bold">
+                      Valence: <span className="purpleTitle ml-1">{((params_res?.valence || 0.5) * 100).toFixed(0)}
+                      %</span>
                     </div>
                   </div>
                 </div>
@@ -255,13 +255,13 @@ const WorkflowContainer: FC = () => {
 
               {/* Audio Generation Controls */}
               <div className="bg-gray-50 p-4 rounded-lg card2">
-                <h4 className="font-medium mb-3">Generate Lofi Video</h4>
+                <h4 className="font-medium mb-3 text-lg">Generate Lofi Video</h4>
 
                 <div className="flex gap-3">
                   <Button
                     onClick={() => generateAudio(params_res, videoFile.file)}
                     disabled={isGenerating}
-                    className="flex-1 darkBtn"
+                    className="flex-1 darkBtn text-[0.98rem]"
                   >
                     {isGenerating ? "Generating Audio..." : "Generate Video"}
                   </Button>
@@ -298,8 +298,6 @@ const WorkflowContainer: FC = () => {
             >
               Create Another
             </Button>
-
-             <Button className="darkBtn">Add to Playlist</Button>
 
             {combinedBlob && (
               <Button onClick={handleDownloadVideo} className="darkBtn">

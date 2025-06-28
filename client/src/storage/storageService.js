@@ -6,7 +6,8 @@ export async function appwriteStorage(file) {
     const userId = user.$id;
 
     const permissions = [
-      Permission.read(Role.user(userId)),
+      // Permission.read(Role.user(userId)),
+      Permission.read('any'),
       Permission.write(Role.user(userId))
     ];
 

@@ -14,6 +14,7 @@ import {
   account,
   storage,
 } from "../storage/appwriteConfig";
+import ShareModal from "./ShareModal";
 
 const TrackHistory: FC = () => {
   const [docs, setDocs] = useState([]);
@@ -21,6 +22,12 @@ const TrackHistory: FC = () => {
   const [editedNames, setEditedNames] = useState({});
   const [selectedTrackId, setSelectedTrackId] = useState<string | null>(null);
   const [userPlaylists, setUserPlaylists] = useState([]);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+
+  const shareLink = (fileId: string): string => {
+    const url =  storage.getFileView(import.meta.env.VITE_APPWRITE_BUCKET_ID, fileId);
+    return url;
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -280,7 +287,8 @@ const TrackHistory: FC = () => {
                 onClick={() => downloadFile(track.video)}
                 className="text-lg hover:text-purple-600"
               />
-              <IoShareSocial className="text-lg hover:text-purple-600" />
+              <IoShareSocial className="text-lg hover:text-purple-600" onClick={() => setIsShareOpen(true)} />
+              <ShareModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} videoUrl={shareLink(track.video)} />
               {editingTrackId === track.$id ? (
                 <MdOutlineDone
                   onClick={() => handleUpdate(track.$id)}
