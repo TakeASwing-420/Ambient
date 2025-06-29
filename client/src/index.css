@@ -447,3 +447,67 @@ label {
   background: #252542 !important;
   border-bottom: 1px solid rgb(182, 182, 182) !important;
 }
+
+.flowing-gradient {
+  /* background: linear-gradient(-45deg, #3e0e64, #540f8d, #7f1ddb, #811dc3, #860ff5, #621E99, #3e0e64); */
+  background: radial-gradient(circle at center, #a84ff7 0%, #7f1ddb 25%, #621E99 50%, #3e0e64 75%, #1e0d3f 100%);
+  background-size: 400% 400%;
+  animation: gradient-flow 6s ease infinite;
+}
+
+.flowing-gradient2 {
+  background: linear-gradient(-45deg, #3d0e647b, #a73bff7b, #8517ec7b, #981da07b);
+  background-size: 300% 300%;
+  animation: gradient-flow 6s ease infinite;
+}
+
+.flowing-gradient3 {
+  background: radial-gradient(circle at center, #3e0e64, #621E99, #6913B9, #b83280, #ff4ecd, #c1121f);
+  background-size: 400% 400%;
+  animation: gradient-flow 6s ease infinite;
+}
+
+@keyframes gradient-flow2 {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes gradient-flow {
+  0% {
+    background-position: 50% 25%;
+    /* transform: rotate(0deg) scale(1); */
+  }
+  25% {
+    background-position: 75% 0%;
+    /* transform: rotate(90deg) scale(1.05); */
+  }
+  50% {
+    background-position: 100% 25%;
+    /* transform: rotate(180deg) scale(1); */
+  }
+  75% {
+    background-position: 75% 50%;
+    /* transform: rotate(270deg) scale(1.05); */
+  }
+  100% {
+    background-position: 50% 25%;
+    /* transform: rotate(360deg) scale(1); */
+  }
+}
+
+.proInput {
+  background: #340a5a !important;
+}

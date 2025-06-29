@@ -24,6 +24,7 @@ const Playlists: FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newName, setNewName] = useState<string>("");
   const [selectedPlaylistId, setSelectedPlaylistId] = useState(null);
+  const [playlistShow, setPlaylistShow] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -185,126 +186,139 @@ const Playlists: FC = () => {
   return (
     <>
       <main className="w-full flex flex-col gap-4 justify-center items-center">
-        <div className="w-full px-4 py-2 flex justify-between items-center relative">
-          <h1 className="font-semibold text-2xl">Your Playlists</h1>
+        {selectedPlaylistId === null && (
+          <>
+            <div className="w-full px-4 py-2 flex justify-between items-center relative">
+              <h1 className="font-semibold text-2xl">Your Playlists</h1>
 
-          {show && (
-            <div className="rounded-lg flex flex-col p-8 backdrop-blur-lg bg-violet-700/20 fixed top-[30%] left-[38%]">
-              <IoCloseOutline
-                className="text-gray-400 hover:text-white transition-all duration-200 ease-in-out text-xl absolute top-3 right-2"
-                onClick={() => {
-                  setShow(false);
-                }}
-              />
-              <h2 className="text-2xl font-poppins font-bold mb-4">
-                Create New <span className="purpleTitle">LoFi</span> Playlist
-              </h2>
-              <label htmlFor="name" className="mb-1 text-base font-thin">
-                Name:
-              </label>
-              <input
-                type="text"
-                name="name"
-                id="name"
-                onChange={(e) => setPlaylistName(e.target.value)}
-                placeholder="Enter Playlist Name..."
-                className="px-3 py-1 bg-transparent subText rounded-lg text-sm pl-1"
-              />
-              <div className="w-full flex justify-center">
-                <button
-                  className="mt-5 darkBtn w-fit px-4 py-1 rounded-lg"
-                  onClick={handleCreate}
-                >
-                  Create
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-center items-center gap-2 text-sm">
-            <button
-              className="flex justify-center items-center gap-2 text-white bg-purple-500 px-4 py-2 rounded-lg hover:bg-purple-600 transition-all duration-200 ease-in-out darkBtn"
-              onClick={() => {
-                setShow(true);
-              }}
-            >
-              <IoMdAdd /> New Playlist
-            </button>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap md:justify-normal justify-center md:gap-4 gap-8 w-full h-fit">
-          {playlists.map((playlist) => (
-            <div
-              key={playlist.$id}
-              className="h-[300px] md:w-[32.4%] w-[95%] rounded-lg bg-white shadow-lg border flex flex-col justify-between overflow-hidden playlist"
-            >
-              <div className="h-1/2 bg-gradient-to-br from-purple-900 via-purple-600 via-fuchsia-500 to-pink-400 flex justify-center items-center text-4xl">
-                <FaMusic className="text-white/50" />
-              </div>
-
-              <div className="p-3">
-                <div className="flex justify-between mb-6 items-center">
-                  {editingId === playlist.$id ? (
-                    <input
-                      type="text"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      onKeyDown={(e) =>
-                        e.key === "Enter" && updatePlaylistName(playlist.$id)
-                      }
-                      className="border px-2 py-1 text-sm rounded-md"
-                      autoFocus
-                    />
-                  ) : (
-                    <h1 className="text-lg font-semibold truncate">
-                      {playlist.name}
-                    </h1>
-                  )}
-                  <div className="flex gap-2">
-                    {editingId === playlist.$id ? (
-                      <MdOutlineDone
-                        className="text-lg text-green-600 cursor-pointer hover:text-green-800"
-                        onClick={() => updatePlaylistName(playlist.$id)}
-                        title="Save changes"
-                      />
-                    ) : (
-                      <MdOutlineEdit
-                        className="text-lg cursor-pointer hover:text-purple-600 opacity-50 hover:opacity-80"
-                        onClick={() => {
-                          setEditingId(playlist.$id);
-                          setNewName(playlist.name);
-                        }}
-                        title="Edit playlist name"
-                      />
-                    )}
-                    <RiDeleteBinLine
-                      className="text-lg hover:text-red-500 opacity-50 hover:opacity-80"
-                      onClick={() => {
-                        deletePlaylist(playlist.$id);
-                      }}
-                    />
+              {show && (
+                // <div className="rounded-lg flex flex-col p-8 backdrop-blur-lg flowing-gradient2 fixed top-[30%] left-[38%]">
+                <div className="rounded-lg flex flex-col p-8 backdrop-blur-lg bg-[#1a1a2e84] fixed top-[30%] left-[38%]">
+                  <IoCloseOutline
+                    className="text-gray-400 hover:text-white transition-all duration-200 ease-in-out text-xl absolute top-3 right-2"
+                    onClick={() => {
+                      setShow(false);
+                    }}
+                  />
+                  <h2 className="text-2xl font-poppins font-bold mb-4">
+                    Create New <span className="purpleTitle">LoFi</span>{" "}
+                    Playlist
+                  </h2>
+                  <label htmlFor="name" className="mb-1 text-base font-thin">
+                    Name:
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    onChange={(e) => setPlaylistName(e.target.value)}
+                    placeholder="Enter Playlist Name..."
+                    className="px-3 py-1 bg-transparent subText rounded-lg text-sm pl-1"
+                  />
+                  <div className="w-full flex justify-center">
+                    <button
+                      className="mt-5 darkBtn w-fit px-4 py-1 rounded-lg"
+                      onClick={handleCreate}
+                    >
+                      Create
+                    </button>
                   </div>
                 </div>
-                <p className="subText text-sm mb-2">
-                  {playlist.initTracks.length === 1
-                    ? playlist.initTracks.length + " track"
-                    : playlist.initTracks.length + " tracks"}
-                </p>
+              )}
+
+              <div className="flex justify-center items-center gap-2 text-sm">
                 <button
-                  onClick={() => setSelectedPlaylistId(playlist.$id)}
-                  className="w-full flex justify-center items-center gap-2 bg-purple-500 rounded-lg py-2 text-white hover:bg-purple-600 darkBtn"
+                  className="flex justify-center items-center gap-2 text-white bg-purple-500 px-4 py-2 rounded-lg hover:bg-purple-600 transition-all duration-200 ease-in-out darkBtn"
+                  onClick={() => {
+                    setShow(true);
+                  }}
                 >
-                  <CiPlay1 /> Play
+                  <IoMdAdd /> New Playlist
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+
+            <div className="flex flex-wrap md:justify-normal justify-center md:gap-4 gap-8 w-full h-fit">
+              {playlists.map((playlist) => (
+                <div
+                  key={playlist.$id}
+                  className="h-[300px] md:w-[32.4%] w-[95%] rounded-lg bg-white shadow-lg border flex flex-col justify-between overflow-hidden playlist"
+                >
+                  {/* <div className="h-1/2 bg-gradient-to-br from-purple-900 via-purple-600 via-fuchsia-500 to-pink-400 flex justify-center items-center text-4xl"> */}
+                  <div className="h-1/2 bg-gradient-to-br overflow-hidden flowing-gradient flex justify-center items-center text-4xl">
+                    <FaMusic className="text-white/50" />
+                  </div>
+
+                  <div className="p-3">
+                    <div className="flex justify-between mb-6 items-center">
+                      {editingId === playlist.$id ? (
+                        <input
+                          type="text"
+                          value={newName}
+                          onChange={(e) => setNewName(e.target.value)}
+                          onKeyDown={(e) =>
+                            e.key === "Enter" &&
+                            updatePlaylistName(playlist.$id)
+                          }
+                          className="border px-2 py-1 text-sm rounded-md"
+                          autoFocus
+                        />
+                      ) : (
+                        <h1 className="text-lg font-semibold truncate">
+                          {playlist.name}
+                        </h1>
+                      )}
+                      <div className="flex gap-2">
+                        {editingId === playlist.$id ? (
+                          <MdOutlineDone
+                            className="text-lg text-green-600 cursor-pointer hover:text-green-800"
+                            onClick={() => updatePlaylistName(playlist.$id)}
+                            title="Save changes"
+                          />
+                        ) : (
+                          <MdOutlineEdit
+                            className="text-lg cursor-pointer hover:text-purple-600 opacity-50 hover:opacity-80"
+                            onClick={() => {
+                              setEditingId(playlist.$id);
+                              setNewName(playlist.name);
+                            }}
+                            title="Edit playlist name"
+                          />
+                        )}
+                        <RiDeleteBinLine
+                          className="text-lg hover:text-red-500 opacity-50 hover:opacity-80"
+                          onClick={() => {
+                            deletePlaylist(playlist.$id);
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <p className="subText text-sm mb-2">
+                      {playlist.initTracks.length === 1
+                        ? playlist.initTracks.length + " track"
+                        : playlist.initTracks.length + " tracks"}
+                    </p>
+                    <button
+                      onClick={() => {
+                        setSelectedPlaylistId(playlist.$id);
+                      }}
+                      className="w-full flex justify-center items-center gap-2 bg-purple-500 rounded-lg py-2 text-white hover:bg-purple-600 darkBtn"
+                    >
+                      <CiPlay1 /> Play
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         {selectedPlaylistId && (
-          <PlaylistTracks playlistId={selectedPlaylistId} />
+          <PlaylistTracks playlistId={selectedPlaylistId} onBack={() => setSelectedPlaylistId(null)} />
         )}
+
+        {/* const [playlists, setPlaylists] = useState([]);
+        const [show, setShow] = useState(false); */}
       </main>
     </>
   );

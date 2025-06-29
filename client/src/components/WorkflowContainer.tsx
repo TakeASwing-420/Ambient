@@ -103,7 +103,7 @@ const WorkflowContainer: FC = () => {
       {currentStep === 1 && (
         <div className="p-6">
           <h3 className="font-poppins font-semibold text-xl mb-4">
-            Upload Your Video
+            Upload Your Videos/Images
           </h3>
 
           <VideoUploadZone
@@ -117,7 +117,7 @@ const WorkflowContainer: FC = () => {
       {currentStep === 2 && videoFile && (
         <div className="p-6">
           <h3 className="font-poppins font-semibold text-xl mb-4">
-            Generate LoFi Video
+            Analyze Files
           </h3>
 
           <div className="mb-6">
@@ -135,7 +135,7 @@ const WorkflowContainer: FC = () => {
                   className="lightBtn"
                   onClick={() => setCurrentStep(1)}
                 >
-                  Change Video
+                  Change Media Files
                 </Button>
               </div>
             </div>
@@ -151,9 +151,9 @@ const WorkflowContainer: FC = () => {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 card2">
             <h4 className="font-medium purpleTitle mb-2">How it works:</h4>
             <ul className="text-sm subText space-y-1">
-              <li>• AI analyzes your video's visual content and mood</li>
+              <li>• AI analyzes your media's visual and audio content with mood</li>
               <li>
-                • Generates custom lofi music parameters (key, tempo, energy)
+                • Generates custom lofi music parameters (key, tempo, energy, Variance)
               </li>
               <li>• Creates and overlays the perfect lofi soundtrack</li>
               <li>• Produces a new video with the generated music</li>
@@ -173,7 +173,7 @@ const WorkflowContainer: FC = () => {
               disabled={isProcessing}
               className="darkBtn"
             >
-              {isProcessing ? "Processing Video..." : "Generate LoFi Video"}
+              {isProcessing ? "Processing Video..." : "Analyse for LoFi Video"}
             </Button>
           </div>
         </div>
@@ -190,7 +190,7 @@ const WorkflowContainer: FC = () => {
               Creating Your LoFi Video
             </h3>
             <p className="subText max-w-md mx-auto mb-4">
-              Our AI is analyzing your video and generating the perfect lofi
+              Our AI is analyzing your Media files and generating the perfect lofi
               soundtrack. This might take a few minutes...
             </p>
           </div>
@@ -202,7 +202,7 @@ const WorkflowContainer: FC = () => {
         <div className="p-6">
           <div className="bg-red-600/20 border border-red-600 rounded-lg p-4">
             <h4 className="font-medium text-red-200 mb-2">Processing Error</h4>
-            <p className="text-red-100 text-sm">Input video is not lofifiable.</p>
+            <p className="text-red-100 text-sm">Input files are not lofifiable.</p>
             <Button
               onClick={handleStartOver}
               variant="outline"

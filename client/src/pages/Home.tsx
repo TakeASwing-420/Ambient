@@ -71,10 +71,10 @@ const Home: FC = () => {
 
           <div className="w-[95%] z-[1] md:mt-0 mt-8 p-1 flex flex-col justify-center items-center text-left">
             <h2 className="font-poppins font-bold text-2xl md:text-5xl mb-1 md:text-left text-center">
-              Transform Your Video into
+              Transform Your Videos and Images
             </h2>
             <h2 className="font-poppins font-bold text-2xl md:text-5xl mb-5 purpleTitle">
-              Chill LoFi Beats
+              into Chill LoFi Beats
             </h2>
             <p className="subText max-w-2xl md:text-lg text-sm mb-5 text-center">
               Upload your video and let our tool generate relaxing lofi beats

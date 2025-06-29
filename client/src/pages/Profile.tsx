@@ -9,6 +9,7 @@ import { BsShieldLockFill } from "react-icons/bs";
 import { FaUser } from "react-icons/fa";
 import { MdEmail } from "react-icons/md";
 import { BsCalendar2DateFill } from "react-icons/bs";
+import { toast } from "@/hooks/use-toast";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -23,9 +24,8 @@ const Profile = () => {
       try {
         const userData = await account.get();
 
-        // Convert profilePic file ID to preview URL if present
         if (userData.prefs?.profilePic) {
-          const preview = storage.getFilePreview(
+          const preview = storage.getFileView(
             import.meta.env.VITE_APPWRITE_BUCKET_ID,
             userData.prefs.profilePic
           ).href;
@@ -113,7 +113,7 @@ const Profile = () => {
 
       // Fetch preview if pic uploaded
       if (updatedUser.prefs?.profilePic) {
-        const preview = storage.getFilePreview(
+        const preview = storage.getFileView(
           import.meta.env.VITE_APPWRITE_BUCKET_ID,
           updatedUser.prefs.profilePic
         ).href;
@@ -124,6 +124,10 @@ const Profile = () => {
       setIsEditing(false);
       setProfilePicFile(null);
       console.log("Profile updated successfully!");
+      toast({
+              title: "Profile Updated",
+              description: "Profile updated Successfully!",
+            });
     } catch (err) {
       console.error("Failed to update profile:", err);
     }
@@ -178,7 +182,7 @@ const Profile = () => {
                     type="text"
                     value={newUsername}
                     onChange={(e) => setNewUsername(e.target.value)}
-                    className="ml-2 px-2 py-1 rounded-md bg-transparent border-b border-purple-500 text-white"
+                    className="ml-2 px-2 py-1 rounded-md bg-transparent border-b border-purple-500 text-white proInput"
                   />
                 ) : (
                   <span>{user?.prefs?.username ?? user.$id}</span>

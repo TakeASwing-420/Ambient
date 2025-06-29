@@ -89,21 +89,21 @@ const VideoUploadZone: FC<VideoUploadZoneProps> = ({ onFileUpload, isFileSelecte
         
         <div>
           <h3 className="text-lg font-medium purpleTitle mb-2">
-            {isFileSelected ? 'Video Selected!' : 'Upload Your Video'}
+            {isFileSelected ? 'Files Selected!' : 'Upload Your Files'}
           </h3>
           <p className="text-gray-500 mb-4">
             {isDragOver 
-              ? 'Drop your video here' 
-              : 'Drag and drop your video file here, or click to browse'
+              ? 'Drop your files here' 
+              : 'Drag and drop your files here, or click to browse'
             }
           </p>
           
           <Button className="mb-4 darkBtn">
-            Choose Video File
+            Choose Media Files
           </Button>
           
           <div className="text-xs text-gray-400 space-y-1">
-            <p>Supported formats: MP4, MOV, AVI, WebM</p>
+            <p>Supported formats: MP4, MOV, AVI, WebM, JPG, JPEG, PNG</p>
             <p>Maximum file size: 100MB</p>
           </div>
         </div>
